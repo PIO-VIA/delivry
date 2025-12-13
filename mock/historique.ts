@@ -1,7 +1,6 @@
-// Mock data pour l'historique des livraisons
-// Historique des livraisons complétées par les livreurs
+import { HistoriqueLivraison } from './types';
 
-const historiqueLivraisons = [
+const historiqueLivraisons: HistoriqueLivraison[] = [
   {
     id: 1,
     commande_id: 3,

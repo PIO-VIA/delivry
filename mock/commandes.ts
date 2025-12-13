@@ -1,7 +1,6 @@
-// Mock data pour les commandes
-// Données réalistes avec différents statuts et relations aux clients/livreurs
+import { Commande } from './types';
 
-const commandes = [
+const commandes: Commande[] = [
   {
     id: 1,
     numero_commande: "CMD-2025-001",

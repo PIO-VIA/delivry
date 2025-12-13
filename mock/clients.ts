@@ -1,7 +1,6 @@
-// Mock data pour les clients
-// Données réalistes pour les clients de l'application e-commerce
+import { Client } from './types';
 
-const clients = [
+const clients: Client[] = [
   {
     id: 1,
     nom: "Ousmane Diop",

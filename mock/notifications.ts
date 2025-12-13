@@ -1,7 +1,6 @@
-// Mock data pour les notifications
-// Notifications pour les livreurs avec différents types et statuts
+import { Notification } from './types';
 
-const notifications = [
+const notifications: Notification[] = [
   {
     id: 1,
     type: "nouvelle_livraison",

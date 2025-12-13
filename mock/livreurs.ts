@@ -1,12 +1,11 @@
-// Mock data pour les livreurs
-// Données réalistes pour une application de livraison en Afrique
+import { Livreur } from './types';
 
-const livreurs = [
+const livreurs: Livreur[] = [
   {
     id: 1,
     username: "amadou_diallo",
     email: "amadou.diallo@delivery.com",
-    password: "password123", // Mock seulement
+    password: "password123",
     role: "livreur",
     phone: "+221 77 123 45 67",
     adresse: "Rue 12, Médina, Dakar",
