@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, Text, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { StyleSheet, View, Text, FlatList, ActivityIndicator } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/hooks/use-theme';
 import { useStore } from '@/store';
 import mockApi from '@/api/mockService';
 import { Notification } from '@/mock/types';
+import { Icon } from '@/components/ui/icon';
 
 export default function NotificationsScreen() {
   const { t } = useTranslation();
@@ -32,14 +33,14 @@ export default function NotificationsScreen() {
     loadNotifications();
   }, [livreur]);
 
-  const getTypeIcon = (type: Notification['type']) => {
+  const getTypeIcon = (type: Notification['type']): 'package' | 'check-circle' | 'bell' => {
     switch (type) {
       case 'nouvelle_livraison':
-        return '📦';
+        return 'package';
       case 'changement_statut':
-        return '✅';
+        return 'check-circle';
       case 'rappel':
-        return '⏰';
+        return 'bell';
     }
   };
 
@@ -80,15 +81,18 @@ export default function NotificationsScreen() {
     >
       <View style={styles.notifHeader}>
         <View style={[styles.iconBadge, { backgroundColor: getTypeColor(item.type) + '20' }]}>
-          <Text style={styles.iconText}>{getTypeIcon(item.type)}</Text>
+          <Icon name={getTypeIcon(item.type)} size={24} color={getTypeColor(item.type)} />
         </View>
         <View style={styles.notifContent}>
           <Text style={[styles.notifMessage, { color: theme.colors.text }]} numberOfLines={2}>
             {item.message}
           </Text>
-          <Text style={[styles.notifDate, { color: theme.colors.textSecondary }]}>
-            {formatDate(item.date)}
-          </Text>
+          <View style={styles.notifFooter}>
+            <Icon name="clock" size={12} color={theme.colors.textSecondary} />
+            <Text style={[styles.notifDate, { color: theme.colors.textSecondary }]}>
+              {formatDate(item.date)}
+            </Text>
+          </View>
         </View>
       </View>
     </View>
@@ -111,6 +115,7 @@ export default function NotificationsScreen() {
         contentContainerStyle={styles.listContent}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
+            <Icon name="bell" size={48} color={theme.colors.textSecondary} />
             <Text style={[styles.emptyText, { color: theme.colors.textSecondary }]}>
               {t('notifications.noNotifications')}
             </Text>
@@ -150,16 +155,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  iconText: {
-    fontSize: 24,
-  },
   notifContent: {
     flex: 1,
-    gap: 4,
+    gap: 6,
   },
   notifMessage: {
     fontSize: 15,
     lineHeight: 20,
+  },
+  notifFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
   notifDate: {
     fontSize: 13,
@@ -169,6 +176,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: 48,
+    gap: 16,
   },
   emptyText: {
     fontSize: 16,

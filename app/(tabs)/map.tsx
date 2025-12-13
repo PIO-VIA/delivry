@@ -5,6 +5,7 @@ import * as Location from 'expo-location';
 import { useTheme } from '@/hooks/use-theme';
 import { useStore } from '@/store';
 import { Commande } from '@/mock/types';
+import { Icon } from '@/components/ui/icon';
 
 export default function MapScreen() {
   const { t } = useTranslation();
@@ -40,7 +41,7 @@ export default function MapScreen() {
   );
 
   const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): string => {
-    const R = 6371; // Rayon de la Terre en km
+    const R = 6371;
     const dLat = (lat2 - lat1) * Math.PI / 180;
     const dLon = (lon2 - lon1) * Math.PI / 180;
     const a =
@@ -71,7 +72,6 @@ export default function MapScreen() {
         if (supported) {
           Linking.openURL(url);
         } else {
-          // Fallback to Google Maps web
           Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${delivery.latitude},${delivery.longitude}`);
         }
       });
@@ -102,9 +102,12 @@ export default function MapScreen() {
   return (
     <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <View style={[styles.locationCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
-        <Text style={[styles.locationLabel, { color: theme.colors.textSecondary }]}>
-          📍 {t('map.currentLocation')}
-        </Text>
+        <View style={styles.locationHeader}>
+          <Icon name="map-pin" size={20} color={theme.colors.primary} />
+          <Text style={[styles.locationLabel, { color: theme.colors.textSecondary }]}>
+            {t('map.currentLocation')}
+          </Text>
+        </View>
         {livreur && (
           <Text style={[styles.locationText, { color: theme.colors.text }]}>
             {livreur.adresse}
@@ -176,28 +179,28 @@ export default function MapScreen() {
 
                 <View style={styles.cardBody}>
                   <View style={styles.row}>
-                    <Text style={styles.icon}>📍</Text>
+                    <Icon name="map-pin" size={16} color={theme.colors.textSecondary} />
                     <Text style={[styles.address, { color: theme.colors.text }]} numberOfLines={2}>
                       {delivery.adresse_livraison}
                     </Text>
                   </View>
 
                   <View style={styles.row}>
-                    <Text style={styles.icon}>📏</Text>
+                    <Icon name="truck" size={16} color={theme.colors.primary} />
                     <Text style={[styles.distance, { color: theme.colors.primary }]}>
                       {distance}
                     </Text>
                   </View>
 
                   <View style={styles.row}>
-                    <Text style={styles.icon}>💰</Text>
+                    <Icon name="dollar" size={16} color={theme.colors.success} />
                     <Text style={[styles.amount, { color: theme.colors.success }]}>
                       {delivery.montant_total.toLocaleString()} FCFA
                     </Text>
                   </View>
 
                   <View style={styles.row}>
-                    <Text style={styles.icon}>📞</Text>
+                    <Icon name="phone" size={16} color={theme.colors.textSecondary} />
                     <Text style={[styles.phone, { color: theme.colors.textSecondary }]}>
                       {delivery.client_phone}
                     </Text>
@@ -205,7 +208,8 @@ export default function MapScreen() {
                 </View>
 
                 <View style={[styles.navigateButton, { backgroundColor: theme.colors.primary }]}>
-                  <Text style={styles.navigateText}>🧭 {t('map.navigate')}</Text>
+                  <Icon name="navigation" size={18} color="#FFFFFF" />
+                  <Text style={styles.navigateText}>{t('map.navigate')}</Text>
                 </View>
               </TouchableOpacity>
             );
@@ -242,9 +246,14 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
   },
+  locationHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 8,
+  },
   locationLabel: {
     fontSize: 14,
-    marginBottom: 8,
   },
   locationText: {
     fontSize: 16,
@@ -296,16 +305,13 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   cardBody: {
-    gap: 8,
+    gap: 10,
     marginBottom: 12,
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-  },
-  icon: {
-    fontSize: 16,
+    gap: 10,
   },
   address: {
     flex: 1,
@@ -327,6 +333,9 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 8,
   },
   navigateText: {
     color: '#FFFFFF',
