@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
-import { StyleSheet, View, TextInput, TouchableOpacity, Text, Alert, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
-import { router } from 'expo-router';
-import { useTranslation } from 'react-i18next';
+import mockApi from '@/api/mockService';
+import { Icon } from '@/components/ui/icon';
 import { useTheme } from '@/hooks/use-theme';
 import { useStore } from '@/store';
-import mockApi from '@/api/mockService';
+import { router } from 'expo-router';
+import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { ActivityIndicator, Alert, Image, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 export default function LoginScreen() {
   const { t } = useTranslation();
@@ -13,6 +14,7 @@ export default function LoginScreen() {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
@@ -45,50 +47,81 @@ export default function LoginScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <View style={styles.content}>
+        <View style={styles.logoContainer}>
+          <Image
+            source={require('@/assets/images/logo.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+          <Text style={[styles.appName, { color: theme.colors.primary }]}>
+            Delivery<Text style={{ color: theme.colors.secondary }}>Pro</Text>
+          </Text>
+        </View>
+
         <Text style={[styles.title, { color: theme.colors.text }]}>
           {t('auth.login')}
         </Text>
 
         <View style={styles.form}>
-          <TextInput
-            style={[
-              styles.input,
-              {
-                backgroundColor: theme.colors.surface,
-                color: theme.colors.text,
-                borderColor: theme.colors.border,
-              },
-            ]}
-            placeholder={t('auth.emailPlaceholder')}
-            placeholderTextColor={theme.colors.placeholder}
-            value={email}
-            onChangeText={setEmail}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            editable={!loading}
-          />
+          <View style={[styles.inputContainer, { shadowColor: theme.colors.shadow }]}>
+            <TextInput
+              style={[
+                styles.input,
+                {
+                  backgroundColor: theme.colors.surface,
+                  color: theme.colors.text,
+                  borderColor: theme.colors.border,
+                },
+              ]}
+              placeholder={t('auth.emailPlaceholder')}
+              placeholderTextColor={theme.colors.placeholder}
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              editable={!loading}
+            />
+          </View>
 
-          <TextInput
-            style={[
-              styles.input,
-              {
-                backgroundColor: theme.colors.surface,
-                color: theme.colors.text,
-                borderColor: theme.colors.border,
-              },
-            ]}
-            placeholder={t('auth.passwordPlaceholder')}
-            placeholderTextColor={theme.colors.placeholder}
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            editable={!loading}
-          />
+          <View style={[styles.inputContainer, { shadowColor: theme.colors.shadow, flexDirection: 'row', alignItems: 'center' }]}>
+            <TextInput
+              style={[
+                styles.input,
+                {
+                  backgroundColor: theme.colors.surface,
+                  color: theme.colors.text,
+                  borderColor: theme.colors.border,
+                  flex: 1,
+                  borderRightWidth: 0,
+                  borderTopRightRadius: 0,
+                  borderBottomRightRadius: 0,
+                },
+              ]}
+              placeholder={t('auth.passwordPlaceholder')}
+              placeholderTextColor={theme.colors.placeholder}
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry={!showPassword}
+              editable={!loading}
+            />
+            <TouchableOpacity
+              style={[
+                styles.passwordToggle,
+                {
+                  backgroundColor: theme.colors.surface,
+                  borderColor: theme.colors.border,
+                }
+              ]}
+              onPress={() => setShowPassword(!showPassword)}
+            >
+              <Icon name={showPassword ? 'eye-off' : 'eye'} size={24} color={theme.colors.textSecondary} />
+            </TouchableOpacity>
+          </View>
 
           <TouchableOpacity
             style={[
               styles.button,
-              { backgroundColor: theme.colors.primary },
+              { backgroundColor: theme.colors.primary, shadowColor: theme.colors.primary },
               loading && styles.buttonDisabled,
             ]}
             onPress={handleLogin}
@@ -119,41 +152,84 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 24,
   },
+  logoContainer: {
+    alignItems: 'center',
+    marginBottom: 40,
+  },
+  logo: {
+    width: 120,
+    height: 120,
+    marginBottom: 16,
+  },
+  appName: {
+    fontSize: 28,
+    fontWeight: '800',
+    letterSpacing: 1,
+  },
   title: {
-    fontSize: 32,
-    fontWeight: 'bold',
+    fontSize: 24,
+    fontWeight: '600',
     marginBottom: 32,
     textAlign: 'center',
+    opacity: 0.9,
   },
   form: {
     width: '100%',
   },
+  inputContainer: {
+    marginBottom: 16,
+    borderRadius: 16,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 3.84,
+    elevation: 2,
+  },
   input: {
     height: 56,
     borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    marginBottom: 16,
+    borderRadius: 16,
+    paddingHorizontal: 20,
     fontSize: 16,
+  },
+  passwordToggle: {
+    height: 56,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    borderWidth: 1,
+    borderLeftWidth: 0,
+    borderTopRightRadius: 16,
+    borderBottomRightRadius: 16,
   },
   button: {
     height: 56,
-    borderRadius: 12,
+    borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: 16,
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 4.65,
+    elevation: 8,
   },
   buttonDisabled: {
     opacity: 0.7,
   },
   buttonText: {
     color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
   hint: {
-    marginTop: 24,
+    marginTop: 32,
     textAlign: 'center',
-    fontSize: 14,
+    fontSize: 13,
+    opacity: 0.7,
   },
 });

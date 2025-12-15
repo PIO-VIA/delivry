@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, Text, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
-import { router } from 'expo-router';
-import { useTranslation } from 'react-i18next';
-import { useTheme } from '@/hooks/use-theme';
-import { useStore } from '@/store';
 import mockApi from '@/api/mockService';
+import { useTheme } from '@/hooks/use-theme';
 import { Commande } from '@/mock/types';
+import { useStore } from '@/store';
+import { router } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function DeliveriesScreen() {
   const { t } = useTranslation();
@@ -197,79 +197,98 @@ const styles = StyleSheet.create({
   },
   filterContainer: {
     flexDirection: 'row',
-    padding: 12,
-    gap: 8,
+    padding: 16,
+    gap: 10,
     flexWrap: 'wrap',
   },
   filterButton: {
     paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
+    paddingVertical: 10,
+    borderRadius: 25,
     borderWidth: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
   filterText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   listContent: {
     padding: 16,
     paddingBottom: 32,
   },
   card: {
-    borderRadius: 12,
-    borderWidth: 1,
-    padding: 16,
-    marginBottom: 12,
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+    borderWidth: 0, // Remove border for cleaner look with shadow
   },
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 16,
   },
   orderNumber: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 18,
+    fontWeight: '700',
+    letterSpacing: 0.5,
   },
   statusBadge: {
     paddingHorizontal: 12,
-    paddingVertical: 4,
+    paddingVertical: 6,
     borderRadius: 12,
   },
   statusText: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: '700',
+    textTransform: 'uppercase',
   },
   cardBody: {
-    gap: 6,
+    gap: 8,
   },
   customerName: {
-    fontSize: 16,
-    fontWeight: '500',
+    fontSize: 18,
+    fontWeight: '600',
   },
   address: {
-    fontSize: 14,
+    fontSize: 15,
+    lineHeight: 20,
+    opacity: 0.8,
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#F0F0F0',
   },
   amount: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '700',
   },
   date: {
     fontSize: 14,
+    fontWeight: '500',
   },
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 48,
+    paddingVertical: 64,
   },
   emptyText: {
     fontSize: 16,
+    fontWeight: '500',
   },
 });

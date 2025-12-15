@@ -1,25 +1,29 @@
-import React from 'react';
-import { View, StyleSheet } from 'react-native';
 import {
-  MapPin,
+  AlertCircle,
+  Bell,
+  CheckCircle,
+  ChevronRight,
+  Clock,
   DollarSign,
-  Phone,
+  Eye,
+  EyeOff,
+  LogOut,
+  Map,
+  MapPin,
   Navigation,
   Package,
-  Bell,
-  Clock,
-  CheckCircle,
-  AlertCircle,
-  User,
+  Phone,
   Settings,
-  LogOut,
-  ChevronRight,
   Truck,
+  User,
   type LucideIcon,
 } from 'lucide-react-native';
+import React from 'react';
+import { StyleSheet, View } from 'react-native';
 
 export type IconName =
   | 'map-pin'
+  | 'map'
   | 'dollar'
   | 'phone'
   | 'navigation'
@@ -32,7 +36,9 @@ export type IconName =
   | 'settings'
   | 'logout'
   | 'chevron-right'
-  | 'truck';
+  | 'truck'
+  | 'eye'
+  | 'eye-off';
 
 interface IconProps {
   name: IconName;
@@ -43,6 +49,7 @@ interface IconProps {
 
 const iconMap: Record<IconName, LucideIcon> = {
   'map-pin': MapPin,
+  'map': Map,
   'dollar': DollarSign,
   'phone': Phone,
   'navigation': Navigation,
@@ -56,6 +63,8 @@ const iconMap: Record<IconName, LucideIcon> = {
   'logout': LogOut,
   'chevron-right': ChevronRight,
   'truck': Truck,
+  'eye': Eye,
+  'eye-off': EyeOff,
 };
 
 export const Icon: React.FC<IconProps> = ({ name, size = 20, color = '#000', style }) => {

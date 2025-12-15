@@ -1,21 +1,26 @@
-import React, { useState, useEffect } from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  Alert,
-  ActivityIndicator,
-  Image,
-} from 'react-native';
-import { useLocalSearchParams, router } from 'expo-router';
-import { useTranslation } from 'react-i18next';
-import * as ImagePicker from 'expo-image-picker';
-import { useTheme } from '@/hooks/use-theme';
-import { useStore } from '@/store';
-import { Commande, StatutCommande } from '@/mock/types';
 import { Icon } from '@/components/ui/icon';
+import { useTheme } from '@/hooks/use-theme';
+import { Commande, StatutCommande } from '@/mock/types';
+import { useStore } from '@/store';
+import * as ImagePicker from 'expo-image-picker';
+import { useLocalSearchParams } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import {
+  ActivityIndicator,
+  Alert,
+  Dimensions,
+  Image,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
+
+const { width } = Dimensions.get('window');
 
 export default function DeliveryDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -196,204 +201,245 @@ export default function DeliveryDetailScreen() {
   const photoUri = deliveryProofs[delivery.id];
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <View style={styles.content}>
-        {/* Header */}
-        <View style={[styles.header, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
-          <View style={styles.headerTop}>
-            <Text style={[styles.orderNumber, { color: theme.colors.text }]}>
-              {delivery.numero_commande}
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
+        {/* Map Section */}
+        <View style={styles.mapContainer}>
+          <MapView
+            style={styles.map}
+            provider={PROVIDER_DEFAULT}
+            initialRegion={{
+              latitude: delivery.latitude,
+              longitude: delivery.longitude,
+              latitudeDelta: 0.01,
+              longitudeDelta: 0.01,
+            }}
+          >
+            <Marker
+              coordinate={{
+                latitude: delivery.latitude,
+                longitude: delivery.longitude,
+              }}
+              title={delivery.client_nom}
+              description={delivery.adresse_livraison}
+            />
+          </MapView>
+
+          {/* Floating Status Badge */}
+          <View style={[styles.floatingStatus, { backgroundColor: getStatusColor(delivery.statut) }]}>
+            <Text style={styles.floatingStatusText}>
+              {getStatusLabel(delivery.statut)}
             </Text>
-            <View style={[styles.statusBadge, { backgroundColor: getStatusColor(delivery.statut) + '20' }]}>
-              <Text style={[styles.statusText, { color: getStatusColor(delivery.statut) }]}>
-                {getStatusLabel(delivery.statut)}
-              </Text>
-            </View>
           </View>
-          <Text style={[styles.customerName, { color: theme.colors.text }]}>
-            {delivery.client_nom}
-          </Text>
         </View>
 
-        {/* Delivery Info */}
-        <View style={[styles.section, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
+        <View style={styles.content}>
+          {/* Header Info */}
+          <View style={[styles.card, { backgroundColor: theme.colors.card, shadowColor: theme.colors.shadow }]}>
+            <View style={styles.headerTop}>
+              <View>
+                <Text style={[styles.orderLabel, { color: theme.colors.textSecondary }]}>
+                  {t('deliveries.orderNumber')}
+                </Text>
+                <Text style={[styles.orderNumber, { color: theme.colors.text }]}>
+                  {delivery.numero_commande}
+                </Text>
+              </View>
+              <View style={styles.priceTag}>
+                <Text style={[styles.priceText, { color: theme.colors.success }]}>
+                  {delivery.montant_total.toLocaleString()} FCFA
+                </Text>
+              </View>
+            </View>
+
+            <View style={styles.divider} />
+
+            <View style={styles.customerRow}>
+              <View style={[styles.avatarPlaceholder, { backgroundColor: theme.colors.primary + '20' }]}>
+                <Text style={[styles.avatarText, { color: theme.colors.primary }]}>
+                  {delivery.client_nom.charAt(0)}
+                </Text>
+              </View>
+              <View>
+                <Text style={[styles.customerName, { color: theme.colors.text }]}>
+                  {delivery.client_nom}
+                </Text>
+                <Text style={[styles.customerPhone, { color: theme.colors.textSecondary }]}>
+                  {delivery.client_phone}
+                </Text>
+              </View>
+              <TouchableOpacity
+                style={[styles.phoneButton, { backgroundColor: theme.colors.success + '20' }]}
+                onPress={() => Alert.alert('Info', 'Appel simulé')}
+              >
+                <Icon name="phone" size={20} color={theme.colors.success} />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Delivery Details */}
           <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
             {t('deliveries.deliveryInfo')}
           </Text>
 
-          <View style={styles.infoRow}>
-            <Icon name="map-pin" size={20} color={theme.colors.primary} />
-            <View style={styles.infoContent}>
-              <Text style={[styles.infoLabel, { color: theme.colors.textSecondary }]}>
-                {t('deliveries.address')}
-              </Text>
-              <Text style={[styles.infoValue, { color: theme.colors.text }]}>
-                {delivery.adresse_livraison}
-              </Text>
-            </View>
-          </View>
-
-          <View style={styles.infoRow}>
-            <Icon name="phone" size={20} color={theme.colors.primary} />
-            <View style={styles.infoContent}>
-              <Text style={[styles.infoLabel, { color: theme.colors.textSecondary }]}>
-                {t('deliveries.phone')}
-              </Text>
-              <Text style={[styles.infoValue, { color: theme.colors.text }]}>
-                {delivery.client_phone}
-              </Text>
-            </View>
-          </View>
-
-          <View style={styles.infoRow}>
-            <Icon name="dollar" size={20} color={theme.colors.success} />
-            <View style={styles.infoContent}>
-              <Text style={[styles.infoLabel, { color: theme.colors.textSecondary }]}>
-                {t('deliveries.amount')}
-              </Text>
-              <Text style={[styles.infoValue, { color: theme.colors.success, fontWeight: '600' }]}>
-                {delivery.montant_total.toLocaleString()} FCFA
-              </Text>
-            </View>
-          </View>
-
-          <View style={styles.infoRow}>
-            <Icon name="clock" size={20} color={theme.colors.warning} />
-            <View style={styles.infoContent}>
-              <Text style={[styles.infoLabel, { color: theme.colors.textSecondary }]}>
-                {t('deliveries.expectedDelivery')}
-              </Text>
-              <Text style={[styles.infoValue, { color: theme.colors.text }]}>
-                {formatDate(delivery.date_livraison_prevue)}
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Photo Proof Section */}
-        {(canComplete || photoUri || delivery.preuve_photo_url) && (
-          <View style={[styles.section, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
-            <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
-              {t('deliveries.photoProof')}
-            </Text>
-
-            {photoUri || delivery.preuve_photo_url ? (
-              <Image
-                source={{ uri: photoUri || delivery.preuve_photo_url! }}
-                style={styles.proofImage}
-                resizeMode="cover"
-              />
-            ) : (
-              <View style={styles.noPhoto}>
-                <Icon name="alert-circle" size={48} color={theme.colors.warning} />
-                <Text style={[styles.noPhotoText, { color: theme.colors.textSecondary }]}>
-                  {t('deliveries.noPhoto')}
+          <View style={[styles.card, { backgroundColor: theme.colors.card, shadowColor: theme.colors.shadow }]}>
+            <View style={styles.infoRow}>
+              <View style={[styles.iconBox, { backgroundColor: theme.colors.primary + '10' }]}>
+                <Icon name="map-pin" size={24} color={theme.colors.primary} />
+              </View>
+              <View style={styles.infoContent}>
+                <Text style={[styles.infoLabel, { color: theme.colors.textSecondary }]}>
+                  {t('deliveries.address')}
+                </Text>
+                <Text style={[styles.infoValue, { color: theme.colors.text }]}>
+                  {delivery.adresse_livraison}
                 </Text>
               </View>
-            )}
+            </View>
 
-            {canComplete && !photoUri && (
-              <TouchableOpacity
-                style={[styles.photoButton, { backgroundColor: theme.colors.primary }]}
-                onPress={handleAddPhoto}
-                disabled={isProcessing}
-              >
-                <Icon name="package" size={20} color="#FFFFFF" />
-                <Text style={styles.photoButtonText}>{t('deliveries.takePhoto')}</Text>
-              </TouchableOpacity>
-            )}
+            <View style={[styles.divider, { marginVertical: 16 }]} />
+
+            <View style={styles.infoRow}>
+              <View style={[styles.iconBox, { backgroundColor: theme.colors.warning + '10' }]}>
+                <Icon name="clock" size={24} color={theme.colors.warning} />
+              </View>
+              <View style={styles.infoContent}>
+                <Text style={[styles.infoLabel, { color: theme.colors.textSecondary }]}>
+                  {t('deliveries.expectedDelivery')}
+                </Text>
+                <Text style={[styles.infoValue, { color: theme.colors.text }]}>
+                  {formatDate(delivery.date_livraison_prevue)}
+                </Text>
+              </View>
+            </View>
           </View>
-        )}
 
-        {/* Action Buttons */}
-        <View style={styles.actions}>
-          {canAssign && (
-            <TouchableOpacity
-              style={[styles.actionButton, styles.primaryButton, { backgroundColor: theme.colors.primary }]}
-              onPress={handleAssign}
-              disabled={isProcessing}
-            >
-              {isProcessing ? (
-                <ActivityIndicator color="#FFFFFF" />
-              ) : (
-                <>
-                  <Icon name="package" size={20} color="#FFFFFF" />
-                  <Text style={styles.actionButtonText}>{t('deliveries.takeCharge')}</Text>
-                </>
-              )}
-            </TouchableOpacity>
-          )}
+          {/* Photo Proof Section */}
+          {(canComplete || photoUri || delivery.preuve_photo_url) && (
+            <>
+              <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
+                {t('deliveries.photoProof')}
+              </Text>
+              <View style={[styles.card, { backgroundColor: theme.colors.card, shadowColor: theme.colors.shadow, padding: 0, overflow: 'hidden' }]}>
+                {photoUri || delivery.preuve_photo_url ? (
+                  <Image
+                    source={{ uri: photoUri || delivery.preuve_photo_url! }}
+                    style={styles.proofImage}
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <View style={styles.noPhoto}>
+                    <Icon name="alert-circle" size={48} color={theme.colors.warning} />
+                    <Text style={[styles.noPhotoText, { color: theme.colors.textSecondary }]}>
+                      {t('deliveries.noPhoto')}
+                    </Text>
+                  </View>
+                )}
 
-          {canStartRoute && (
-            <TouchableOpacity
-              style={[styles.actionButton, styles.primaryButton, { backgroundColor: theme.colors.info }]}
-              onPress={() => handleStatusChange('en_route')}
-              disabled={isProcessing}
-            >
-              {isProcessing ? (
-                <ActivityIndicator color="#FFFFFF" />
-              ) : (
-                <>
-                  <Icon name="navigation" size={20} color="#FFFFFF" />
-                  <Text style={styles.actionButtonText}>{t('deliveries.startRoute')}</Text>
-                </>
-              )}
-            </TouchableOpacity>
-          )}
-
-          {canStartDelivery && (
-            <TouchableOpacity
-              style={[styles.actionButton, styles.primaryButton, { backgroundColor: theme.colors.primary }]}
-              onPress={() => handleStatusChange('en_cours')}
-              disabled={isProcessing}
-            >
-              {isProcessing ? (
-                <ActivityIndicator color="#FFFFFF" />
-              ) : (
-                <>
-                  <Icon name="check-circle" size={20} color="#FFFFFF" />
-                  <Text style={styles.actionButtonText}>{t('deliveries.startDelivery')}</Text>
-                </>
-              )}
-            </TouchableOpacity>
-          )}
-
-          {canComplete && (
-            <TouchableOpacity
-              style={[styles.actionButton, styles.primaryButton, { backgroundColor: theme.colors.success }]}
-              onPress={handleComplete}
-              disabled={isProcessing}
-            >
-              {isProcessing ? (
-                <ActivityIndicator color="#FFFFFF" />
-              ) : (
-                <>
-                  <Icon name="check-circle" size={20} color="#FFFFFF" />
-                  <Text style={styles.actionButtonText}>{t('deliveries.completeDelivery')}</Text>
-                </>
-              )}
-            </TouchableOpacity>
-          )}
-
-          {canMarkFailed && (
-            <TouchableOpacity
-              style={[styles.actionButton, styles.dangerButton, { backgroundColor: theme.colors.error }]}
-              onPress={() => handleStatusChange('echec')}
-              disabled={isProcessing}
-            >
-              {isProcessing ? (
-                <ActivityIndicator color="#FFFFFF" />
-              ) : (
-                <>
-                  <Icon name="alert-circle" size={20} color="#FFFFFF" />
-                  <Text style={styles.actionButtonText}>{t('deliveries.markFailed')}</Text>
-                </>
-              )}
-            </TouchableOpacity>
+                {canComplete && !photoUri && (
+                  <TouchableOpacity
+                    style={[styles.photoButton, { backgroundColor: theme.colors.primary }]}
+                    onPress={handleAddPhoto}
+                    disabled={isProcessing}
+                  >
+                    <Icon name="package" size={20} color="#FFFFFF" />
+                    <Text style={styles.photoButtonText}>{t('deliveries.takePhoto')}</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            </>
           )}
         </View>
+      </ScrollView>
+
+      {/* Bottom Action Bar */}
+      <View style={[styles.bottomBar, { backgroundColor: theme.colors.surface, borderTopColor: theme.colors.border }]}>
+        {canAssign && (
+          <TouchableOpacity
+            style={[styles.actionButton, { backgroundColor: theme.colors.primary }]}
+            onPress={handleAssign}
+            disabled={isProcessing}
+          >
+            {isProcessing ? (
+              <ActivityIndicator color="#FFFFFF" />
+            ) : (
+              <>
+                <Icon name="package" size={20} color="#FFFFFF" />
+                <Text style={styles.actionButtonText}>{t('deliveries.takeCharge')}</Text>
+              </>
+            )}
+          </TouchableOpacity>
+        )}
+
+        {canStartRoute && (
+          <TouchableOpacity
+            style={[styles.actionButton, { backgroundColor: theme.colors.info }]}
+            onPress={() => handleStatusChange('en_route')}
+            disabled={isProcessing}
+          >
+            {isProcessing ? (
+              <ActivityIndicator color="#FFFFFF" />
+            ) : (
+              <>
+                <Icon name="navigation" size={20} color="#FFFFFF" />
+                <Text style={styles.actionButtonText}>{t('deliveries.startRoute')}</Text>
+              </>
+            )}
+          </TouchableOpacity>
+        )}
+
+        {canStartDelivery && (
+          <TouchableOpacity
+            style={[styles.actionButton, { backgroundColor: theme.colors.primary }]}
+            onPress={() => handleStatusChange('en_cours')}
+            disabled={isProcessing}
+          >
+            {isProcessing ? (
+              <ActivityIndicator color="#FFFFFF" />
+            ) : (
+              <>
+                <Icon name="check-circle" size={20} color="#FFFFFF" />
+                <Text style={styles.actionButtonText}>{t('deliveries.startDelivery')}</Text>
+              </>
+            )}
+          </TouchableOpacity>
+        )}
+
+        {canComplete && (
+          <TouchableOpacity
+            style={[styles.actionButton, { backgroundColor: theme.colors.success }]}
+            onPress={handleComplete}
+            disabled={isProcessing}
+          >
+            {isProcessing ? (
+              <ActivityIndicator color="#FFFFFF" />
+            ) : (
+              <>
+                <Icon name="check-circle" size={20} color="#FFFFFF" />
+                <Text style={styles.actionButtonText}>{t('deliveries.completeDelivery')}</Text>
+              </>
+            )}
+          </TouchableOpacity>
+        )}
+
+        {canMarkFailed && (
+          <TouchableOpacity
+            style={[styles.actionButton, { backgroundColor: theme.colors.error }]}
+            onPress={() => handleStatusChange('echec')}
+            disabled={isProcessing}
+          >
+            {isProcessing ? (
+              <ActivityIndicator color="#FFFFFF" />
+            ) : (
+              <>
+                <Icon name="alert-circle" size={20} color="#FFFFFF" />
+                <Text style={styles.actionButtonText}>{t('deliveries.markFailed')}</Text>
+              </>
+            )}
+          </TouchableOpacity>
+        )}
       </View>
-    </ScrollView>
+    </View>
   );
 }
 
@@ -412,55 +458,125 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     textAlign: 'center',
   },
-  content: {
-    padding: 16,
+  mapContainer: {
+    height: 300,
+    width: '100%',
+    position: 'relative',
   },
-  header: {
-    borderRadius: 12,
-    borderWidth: 1,
-    padding: 16,
-    marginBottom: 16,
+  map: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  floatingStatus: {
+    position: 'absolute',
+    top: 40,
+    right: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  floatingStatusText: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    fontSize: 14,
+    textTransform: 'uppercase',
+  },
+  content: {
+    padding: 20,
+    marginTop: -20, // Overlap map slightly
+  },
+  card: {
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 20,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
   },
   headerTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+  },
+  orderLabel: {
+    fontSize: 12,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: 4,
   },
   orderNumber: {
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: 24,
+    fontWeight: '800',
   },
-  statusBadge: {
+  priceTag: {
+    backgroundColor: '#F0FDF4',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 12,
   },
-  statusText: {
-    fontSize: 12,
-    fontWeight: '600',
-    textTransform: 'uppercase',
+  priceText: {
+    fontWeight: '700',
+    fontSize: 16,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#E0E0E0',
+    marginVertical: 16,
+  },
+  customerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  avatarPlaceholder: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  avatarText: {
+    fontSize: 20,
+    fontWeight: 'bold',
   },
   customerName: {
-    fontSize: 16,
-    fontWeight: '500',
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 4,
   },
-  section: {
-    borderRadius: 12,
-    borderWidth: 1,
-    padding: 16,
-    marginBottom: 16,
+  customerPhone: {
+    fontSize: 14,
+  },
+  phoneButton: {
+    marginLeft: 'auto',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 16,
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 12,
+    marginLeft: 4,
   },
   infoRow: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    marginBottom: 16,
-    gap: 12,
+    alignItems: 'center',
+  },
+  iconBox: {
+    width: 48,
+    height: 48,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
   },
   infoContent: {
     flex: 1,
@@ -470,18 +586,17 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   infoValue: {
-    fontSize: 15,
-    lineHeight: 20,
+    fontSize: 16,
+    fontWeight: '500',
+    lineHeight: 22,
   },
   proofImage: {
     width: '100%',
-    height: 200,
-    borderRadius: 8,
-    marginBottom: 12,
+    height: 250,
   },
   noPhoto: {
     alignItems: 'center',
-    paddingVertical: 32,
+    paddingVertical: 40,
     gap: 12,
   },
   noPhotoText: {
@@ -491,8 +606,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 12,
-    borderRadius: 8,
+    paddingVertical: 16,
     gap: 8,
   },
   photoButtonText: {
@@ -500,26 +614,31 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-  actions: {
-    gap: 12,
+  bottomBar: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: 20,
+    paddingBottom: Platform.OS === 'ios' ? 34 : 20,
+    borderTopWidth: 1,
   },
   actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 14,
-    borderRadius: 8,
+    paddingVertical: 16,
+    borderRadius: 16,
     gap: 10,
-  },
-  primaryButton: {
-    // backgroundColor set via theme
-  },
-  dangerButton: {
-    // backgroundColor set via theme
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
   },
   actionButtonText: {
     color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
 });
