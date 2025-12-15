@@ -183,7 +183,7 @@ export default function LoginScreen() {
         </View>
 
         <Text style={[styles.hint, { color: theme.colors.textSecondary }]}>
-          Dev: amadou.diallo@delivery.com / password123
+          Dev: franck@delivery.com / password123
         </Text>
       </View>
     </KeyboardAvoidingView>
