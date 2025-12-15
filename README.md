@@ -1,50 +1,70 @@
-# Welcome to your Expo app 👋
+# DeliveryPro - Application de Livraison pour Livreurs 🛵
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Bienvenue sur **DeliveryPro**, une application mobile moderne et performante conçue pour les livreurs. Cette application permet de gérer les livraisons, suivre les itinéraires, et consulter les statistiques de performance, le tout avec une interface utilisateur premium et ergonomique.
 
-## Get started
+## 📱 Fonctionnalités Principales
 
-1. Install dependencies
+*   **Tableau de Bord Intuitif** : Vue d'ensemble des livraisons disponibles, en cours et terminées.
+*   **Carte Interactive** : Visualisation en temps réel des livraisons et de la position du livreur (basée sur `react-native-maps`).
+*   **Détails de Livraison Ergonomiques** : Interface type "Bottom Sheet" pour consulter les infos client, appeler en un clic, et naviguer vers la destination.
+*   **Gestion de Profil** : Modification des informations personnelles, changement de photo de profil, et consultation des statistiques de gains.
+*   **Preuve de Livraison** : Prise de photo intégrée pour valider les livraisons.
+*   **Mode Sombre / Clair** : Thème adaptatif pour un confort visuel optimal de jour comme de nuit.
+*   **Multilingue** : Support complet du Français 🇫🇷 et de l'Anglais 🇬🇧.
+*   **Données Localisées** : Contexte adapté au Cameroun (Yaoundé) pour les démos.
 
-   ```bash
-   npm install
-   ```
+## 🛠 Stack Technique
 
-2. Start the app
+Ce projet est construit avec les dernières technologies de l'écosystème React Native :
 
-   ```bash
-   npx expo start
-   ```
+*   **Framework** : [React Native](https://reactnative.dev/) avec [Expo](https://expo.dev/) (SDK 54).
+*   **Navigation** : [Expo Router](https://docs.expo.dev/router/introduction/) pour une navigation fluide basée sur les fichiers.
+*   **État Global** : [Zustand](https://github.com/pmndrs/zustand) pour une gestion d'état légère et performante.
+*   **Cartographie** : `react-native-maps` pour l'intégration des cartes Google/Apple Maps.
+*   **UI/UX** : Design system personnalisé, icônes via `lucide-react-native`, et animations fluides.
+*   **Internationalisation** : `i18next` et `react-i18next`.
+*   **Stockage** : `AsyncStorage` pour la persistance des données locales.
 
-In the output, you'll find options to open the app in a
+## 🚀 Installation et Démarrage
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+Suivez ces étapes pour lancer le projet sur votre machine :
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+1.  **Prérequis** : Assurez-vous d'avoir Node.js installé.
 
-## Get a fresh project
+2.  **Installation des dépendances** :
+    ```bash
+    npm install
+    ```
 
-When you're ready, run:
+3.  **Lancement de l'application** :
+    ```bash
+    npx expo start
+    ```
 
-```bash
-npm run reset-project
-```
+4.  **Test sur appareil** :
+    *   Téléchargez l'application **Expo Go** sur votre téléphone (Android ou iOS).
+    *   Scannez le QR code affiché dans le terminal.
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## 📂 Structure du Projet
 
-## Learn more
+*   `app/` : Pages et navigation (Expo Router).
+    *   `(tabs)/` : Écrans principaux (Accueil, Carte, Notifications, Historique, Profil).
+    *   `delivery/[id].tsx` : Page de détails d'une livraison.
+    *   `login.tsx` : Page de connexion.
+*   `components/` : Composants réutilisables (UI, Icônes...).
+*   `hooks/` : Hooks personnalisés (Thème, etc.).
+*   `mock/` : Données de simulation (Clients, Livreurs, Commandes - Contexte Cameroun).
+*   `store/` : Gestion d'état global avec Zustand.
+*   `theme/` : Configuration des couleurs et du style global.
+*   `i18n/` : Fichiers de traduction (FR/EN).
 
-To learn more about developing your project with Expo, look at the following resources:
+## 🌍 Contexte de Démo
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+L'application est actuellement configurée avec des données de simulation situées à **Yaoundé, Cameroun**.
+Vous pouvez vous connecter avec les identifiants de test suivants (pré-remplis) :
+*   **Email** : `franck@delivery.com`
+*   **Mot de passe** : `password123`
 
-## Join the community
+## ✨ Auteur
 
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Développé avec passion pour offrir la meilleure expérience aux livreurs.
