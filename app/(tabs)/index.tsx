@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, Text, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
+import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/hooks/use-theme';
 import { useStore } from '@/store';
@@ -14,7 +15,7 @@ export default function DeliveriesScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [deliveries, setDeliveries] = useState<Commande[]>([]);
-  const [filter, setFilter] = useState<'all' | 'en_attente' | 'en_route' | 'en_cours'>('all');
+  const [filter, setFilter] = useState<'all' | 'disponible' | 'assignee' | 'en_route' | 'en_cours'>('all');
 
   const loadDeliveries = async () => {
     if (!livreur) return;
@@ -42,13 +43,17 @@ export default function DeliveriesScreen() {
 
   const getFilteredDeliveries = () => {
     if (filter === 'all') {
-      return deliveries.filter(d => ['en_attente', 'en_route', 'en_cours'].includes(d.statut));
+      return deliveries.filter(d => ['disponible', 'assignee', 'en_route', 'en_cours'].includes(d.statut));
     }
     return deliveries.filter(d => d.statut === filter);
   };
 
   const getStatusColor = (status: Commande['statut']) => {
     switch (status) {
+      case 'disponible':
+        return theme.colors.info;
+      case 'assignee':
+        return theme.colors.warning;
       case 'en_attente':
         return theme.colors.warning;
       case 'en_route':
@@ -66,6 +71,10 @@ export default function DeliveriesScreen() {
 
   const getStatusText = (status: Commande['statut']) => {
     switch (status) {
+      case 'disponible':
+        return t('deliveries.statusAvailable');
+      case 'assignee':
+        return t('deliveries.statusAssigned');
       case 'en_attente':
         return t('deliveries.statusPending');
       case 'en_route':
@@ -80,8 +89,10 @@ export default function DeliveriesScreen() {
   };
 
   const renderDeliveryItem = ({ item }: { item: Commande }) => (
-    <View
+    <TouchableOpacity
       style={[styles.card, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}
+      onPress={() => router.push(`/delivery/${item.id}`)}
+      activeOpacity={0.7}
     >
       <View style={styles.cardHeader}>
         <Text style={[styles.orderNumber, { color: theme.colors.text }]}>
@@ -113,7 +124,7 @@ export default function DeliveriesScreen() {
           </Text>
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 
   if (loading) {
@@ -129,7 +140,7 @@ export default function DeliveriesScreen() {
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <View style={styles.filterContainer}>
-        {(['all', 'en_attente', 'en_route', 'en_cours'] as const).map((f) => (
+        {(['all', 'disponible', 'assignee', 'en_route', 'en_cours'] as const).map((f) => (
           <TouchableOpacity
             key={f}
             style={[
@@ -145,7 +156,7 @@ export default function DeliveriesScreen() {
                 { color: filter === f ? '#FFFFFF' : theme.colors.text },
               ]}
             >
-              {f === 'all' ? t('deliveries.myDeliveries') : getStatusText(f)}
+              {f === 'all' ? t('deliveries.myDeliveries') : getStatusText(f as Commande['statut'])}
             </Text>
           </TouchableOpacity>
         ))}

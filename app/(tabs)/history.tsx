@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, Text, FlatList, ActivityIndicator, Image } from 'react-native';
+import { StyleSheet, View, Text, FlatList, ActivityIndicator, Image, TouchableOpacity } from 'react-native';
+import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/hooks/use-theme';
 import { useStore } from '@/store';
@@ -37,11 +38,13 @@ export default function HistoryScreen() {
     if (!commande) return null;
 
     return (
-      <View
+      <TouchableOpacity
         style={[
           styles.card,
           { backgroundColor: theme.colors.card, borderColor: theme.colors.border },
         ]}
+        onPress={() => router.push(`/delivery/${item.commande_id}`)}
+        activeOpacity={0.7}
       >
         <View style={styles.cardHeader}>
           <View style={styles.headerLeft}>
@@ -104,7 +107,7 @@ export default function HistoryScreen() {
             )}
           </View>
         </View>
-      </View>
+      </TouchableOpacity>
     );
   };
 

@@ -30,13 +30,19 @@ function useProtectedRoute() {
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+  const loadPersistedData = useStore((state) => state.loadPersistedData);
   useProtectedRoute();
+
+  useEffect(() => {
+    loadPersistedData();
+  }, []);
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>
         <Stack.Screen name="login" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="delivery/[id]" options={{ title: 'Détails de la livraison', headerShown: true }} />
       </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>

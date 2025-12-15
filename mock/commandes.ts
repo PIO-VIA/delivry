@@ -4,7 +4,7 @@ const commandes: Commande[] = [
   {
     id: 1,
     numero_commande: "CMD-2025-001",
-    statut: "en_attente",
+    statut: "disponible",
     client_id: 1,
     client_nom: "Ousmane Diop",
     client_phone: "+221 77 111 22 33",
@@ -84,7 +84,7 @@ const commandes: Commande[] = [
   {
     id: 6,
     numero_commande: "CMD-2025-006",
-    statut: "en_attente",
+    statut: "disponible",
     client_id: 6,
     client_nom: "Mariame Fall",
     client_phone: "+221 77 666 77 88",
@@ -164,7 +164,7 @@ const commandes: Commande[] = [
   {
     id: 11,
     numero_commande: "CMD-2025-011",
-    statut: "en_attente",
+    statut: "disponible",
     client_id: 1,
     client_nom: "Ousmane Diop",
     client_phone: "+221 77 111 22 33",
@@ -228,7 +228,7 @@ const commandes: Commande[] = [
   {
     id: 15,
     numero_commande: "CMD-2025-015",
-    statut: "en_attente",
+    statut: "disponible",
     client_id: 7,
     client_nom: "Cheikh Ndao",
     client_phone: "+221 77 777 88 99",
@@ -292,7 +292,7 @@ const commandes: Commande[] = [
   {
     id: 19,
     numero_commande: "CMD-2025-019",
-    statut: "en_attente",
+    statut: "disponible",
     client_id: 9,
     client_nom: "Ibrahima Gueye",
     client_phone: "+221 77 999 00 11",

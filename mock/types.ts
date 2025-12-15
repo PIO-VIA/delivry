@@ -33,8 +33,21 @@ export interface Client {
 
 /**
  * Statuts possibles d'une commande
+ * Transitions autorisées:
+ * - disponible -> assignee (livreur prend en charge)
+ * - assignee -> en_route (livreur démarre)
+ * - en_route -> en_cours (arrivé sur place)
+ * - en_cours -> livre (avec preuve photo)
+ * - en_cours -> echec (si problème)
  */
-export type StatutCommande = 'en_attente' | 'en_route' | 'en_cours' | 'livre' | 'echec';
+export type StatutCommande =
+  | 'disponible'  // Nouveau: livraison disponible
+  | 'assignee'    // Nouveau: assignée à un livreur
+  | 'en_attente'  // Ancien: en attente (deprecated, utiliser 'disponible')
+  | 'en_route'
+  | 'en_cours'
+  | 'livre'
+  | 'echec';
 
 /**
  * Type pour une commande
