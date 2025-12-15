@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, Text, FlatList, ActivityIndicator, Image, TouchableOpacity } from 'react-native';
-import { router } from 'expo-router';
-import { useTranslation } from 'react-i18next';
-import { useTheme } from '@/hooks/use-theme';
-import { useStore } from '@/store';
 import mockApi from '@/api/mockService';
-import { HistoriqueLivraison } from '@/mock/types';
+import { useTheme } from '@/hooks/use-theme';
 import { getCommandeById } from '@/mock';
+import { HistoriqueLivraison } from '@/mock/types';
+import { useStore } from '@/store';
+import { router } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { ActivityIndicator, FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function HistoryScreen() {
   const { t } = useTranslation();
@@ -149,73 +149,90 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: 16,
+    paddingTop: 20,
   },
   card: {
-    borderRadius: 12,
-    borderWidth: 1,
-    padding: 16,
-    marginBottom: 12,
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+    borderWidth: 0,
   },
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 12,
+    marginBottom: 16,
   },
   headerLeft: {
     flex: 1,
     gap: 4,
   },
   orderNumber: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 18,
+    fontWeight: '700',
+    letterSpacing: 0.5,
   },
   customerName: {
-    fontSize: 14,
+    fontSize: 15,
+    fontWeight: '500',
   },
   statusBadge: {
     paddingHorizontal: 12,
-    paddingVertical: 4,
+    paddingVertical: 6,
     borderRadius: 12,
   },
   statusText: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: '700',
+    textTransform: 'uppercase',
   },
   cardBody: {
-    gap: 8,
+    gap: 12,
   },
   address: {
-    fontSize: 14,
+    fontSize: 15,
+    lineHeight: 22,
+    opacity: 0.8,
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#F0F0F0',
   },
   footerLeft: {
     flex: 1,
     gap: 4,
   },
   amount: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '700',
   },
   date: {
-    fontSize: 13,
+    fontSize: 14,
+    fontWeight: '500',
   },
   proofThumbnail: {
-    width: 60,
-    height: 60,
-    borderRadius: 8,
+    width: 64,
+    height: 64,
+    borderRadius: 12,
   },
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 48,
+    paddingVertical: 64,
   },
   emptyText: {
     fontSize: 16,
+    fontWeight: '500',
   },
 });

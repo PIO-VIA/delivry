@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, Text, FlatList, ActivityIndicator } from 'react-native';
-import { useTranslation } from 'react-i18next';
-import { useTheme } from '@/hooks/use-theme';
-import { useStore } from '@/store';
 import mockApi from '@/api/mockService';
-import { Notification } from '@/mock/types';
 import { Icon } from '@/components/ui/icon';
+import { useTheme } from '@/hooks/use-theme';
+import { Notification } from '@/mock/types';
+import { useStore } from '@/store';
+import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
 
 export default function NotificationsScreen() {
   const { t } = useTranslation();
@@ -137,48 +137,61 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: 16,
+    paddingTop: 20,
   },
   notifCard: {
-    borderRadius: 12,
-    borderWidth: 1,
-    padding: 16,
-    marginBottom: 12,
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+    borderWidth: 0,
+    flexDirection: 'row',
   },
   notifHeader: {
     flexDirection: 'row',
-    gap: 12,
+    gap: 16,
+    flex: 1,
   },
   iconBadge: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 56,
+    height: 56,
+    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
   },
   notifContent: {
     flex: 1,
-    gap: 6,
+    gap: 8,
+    justifyContent: 'center',
   },
   notifMessage: {
-    fontSize: 15,
-    lineHeight: 20,
+    fontSize: 16,
+    lineHeight: 22,
+    fontWeight: '500',
   },
   notifFooter: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 6,
+    marginTop: 4,
   },
   notifDate: {
     fontSize: 13,
+    fontWeight: '500',
   },
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 48,
-    gap: 16,
+    paddingVertical: 64,
+    gap: 20,
   },
   emptyText: {
-    fontSize: 16,
+    fontSize: 18,
+    fontWeight: '600',
   },
 });

@@ -1,22 +1,27 @@
 import {
   AlertCircle,
   Bell,
+  Camera,
   CheckCircle,
   ChevronRight,
   Clock,
   DollarSign,
   Eye,
   EyeOff,
+  Globe,
   LogOut,
   Map,
   MapPin,
+  Moon,
   Navigation,
   Package,
   Phone,
   Settings,
+  TrendingUp,
   Truck,
   User,
-  type LucideIcon,
+  X,
+  type LucideIcon
 } from 'lucide-react-native';
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
@@ -38,7 +43,12 @@ export type IconName =
   | 'chevron-right'
   | 'truck'
   | 'eye'
-  | 'eye-off';
+  | 'eye-off'
+  | 'globe'
+  | 'moon'
+  | 'camera'
+  | 'trending-up'
+  | 'x';
 
 interface IconProps {
   name: IconName;
@@ -65,6 +75,11 @@ const iconMap: Record<IconName, LucideIcon> = {
   'truck': Truck,
   'eye': Eye,
   'eye-off': EyeOff,
+  'globe': Globe,
+  'moon': Moon,
+  'camera': Camera,
+  'trending-up': TrendingUp,
+  'x': X,
 };
 
 export const Icon: React.FC<IconProps> = ({ name, size = 20, color = '#000', style }) => {

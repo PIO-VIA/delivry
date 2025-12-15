@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, Text, ActivityIndicator, ScrollView, TouchableOpacity, Linking, Platform } from 'react-native';
-import { useTranslation } from 'react-i18next';
-import * as Location from 'expo-location';
-import { useTheme } from '@/hooks/use-theme';
-import { useStore } from '@/store';
-import { Commande } from '@/mock/types';
 import { Icon } from '@/components/ui/icon';
+import { useTheme } from '@/hooks/use-theme';
+import { Commande } from '@/mock/types';
+import { useStore } from '@/store';
+import * as Location from 'expo-location';
+import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { ActivityIndicator, Linking, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function MapScreen() {
   const { t } = useTranslation();
@@ -242,111 +242,137 @@ const styles = StyleSheet.create({
   },
   locationCard: {
     margin: 16,
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
+    padding: 20,
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+    borderWidth: 0,
   },
   locationHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    marginBottom: 8,
+    gap: 10,
+    marginBottom: 12,
   },
   locationLabel: {
     fontSize: 14,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   locationText: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 4,
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 6,
+    lineHeight: 24,
   },
   coordsText: {
-    fontSize: 12,
+    fontSize: 13,
+    opacity: 0.7,
+    fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
   },
   section: {
     padding: 16,
     paddingTop: 0,
   },
   sectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontSize: 22,
+    fontWeight: '800',
     marginBottom: 16,
+    marginLeft: 4,
   },
   deliveryCard: {
-    borderRadius: 12,
-    borderWidth: 1,
-    padding: 16,
-    marginBottom: 16,
+    borderRadius: 24,
+    padding: 20,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+    borderWidth: 0,
   },
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 12,
+    marginBottom: 16,
   },
   headerLeft: {
     flex: 1,
     gap: 4,
   },
   orderNumber: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 18,
+    fontWeight: '700',
+    letterSpacing: 0.5,
   },
   customerName: {
-    fontSize: 14,
+    fontSize: 15,
+    fontWeight: '500',
   },
   statusBadge: {
     paddingHorizontal: 12,
-    paddingVertical: 4,
+    paddingVertical: 6,
     borderRadius: 12,
   },
   statusText: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: '700',
+    textTransform: 'uppercase',
   },
   cardBody: {
-    gap: 10,
-    marginBottom: 12,
+    gap: 12,
+    marginBottom: 20,
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 12,
   },
   address: {
     flex: 1,
-    fontSize: 14,
-    lineHeight: 20,
+    fontSize: 15,
+    lineHeight: 22,
   },
   distance: {
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 16,
+    fontWeight: '700',
   },
   amount: {
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 16,
+    fontWeight: '700',
   },
   phone: {
-    fontSize: 14,
+    fontSize: 15,
   },
   navigateButton: {
-    paddingVertical: 12,
-    borderRadius: 8,
+    paddingVertical: 16,
+    borderRadius: 16,
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 8,
+    gap: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
   },
   navigateText: {
     color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   emptyContainer: {
-    paddingVertical: 48,
+    paddingVertical: 64,
     alignItems: 'center',
   },
   emptyText: {
     fontSize: 16,
+    fontWeight: '500',
   },
 });

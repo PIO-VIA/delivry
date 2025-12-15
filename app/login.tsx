@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Alert, Image, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 export default function LoginScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const theme = useTheme();
   const { setLivreur, setToken } = useStore();
 
@@ -16,6 +16,7 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showLanguageModal, setShowLanguageModal] = useState(false);
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -41,12 +42,58 @@ export default function LoginScreen() {
     }
   };
 
+  const changeLanguage = (lang: string) => {
+    i18n.changeLanguage(lang);
+    setShowLanguageModal(false);
+  };
+
+  const languages = [
+    { code: 'fr', label: 'Français', flag: '🇫🇷' },
+    { code: 'en', label: 'English', flag: '🇬🇧' },
+  ];
+
   return (
     <KeyboardAvoidingView
       style={[styles.container, { backgroundColor: theme.colors.background }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <View style={styles.content}>
+        <TouchableOpacity
+          style={[styles.languageButton, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}
+          onPress={() => setShowLanguageModal(!showLanguageModal)}
+        >
+          <Icon name="globe" size={20} color={theme.colors.primary} />
+          <Text style={[styles.languageButtonText, { color: theme.colors.text }]}>
+            {languages.find(l => l.code === i18n.language)?.flag || '🌍'}
+          </Text>
+        </TouchableOpacity>
+
+        {showLanguageModal && (
+          <View style={[styles.languageDropdown, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
+            {languages.map((lang) => (
+              <TouchableOpacity
+                key={lang.code}
+                style={[
+                  styles.languageOption,
+                  i18n.language === lang.code && { backgroundColor: theme.colors.primary + '10' }
+                ]}
+                onPress={() => changeLanguage(lang.code)}
+              >
+                <Text style={styles.languageFlag}>{lang.flag}</Text>
+                <Text style={[
+                  styles.languageLabel,
+                  { color: i18n.language === lang.code ? theme.colors.primary : theme.colors.text }
+                ]}>
+                  {lang.label}
+                </Text>
+                {i18n.language === lang.code && (
+                  <Icon name="check-circle" size={16} color={theme.colors.primary} />
+                )}
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+
         <View style={styles.logoContainer}>
           <Image
             source={require('@/assets/images/logo.png')}
@@ -231,5 +278,55 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 13,
     opacity: 0.7,
+  },
+  languageButton: {
+    position: 'absolute',
+    top: 50,
+    right: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    gap: 6,
+    zIndex: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  languageButtonText: {
+    fontSize: 16,
+  },
+  languageDropdown: {
+    position: 'absolute',
+    top: 100,
+    right: 24,
+    borderRadius: 12,
+    borderWidth: 1,
+    padding: 8,
+    zIndex: 20,
+    minWidth: 150,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  languageOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    borderRadius: 8,
+    gap: 12,
+  },
+  languageFlag: {
+    fontSize: 20,
+  },
+  languageLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+    flex: 1,
   },
 });
