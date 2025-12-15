@@ -1,9 +1,9 @@
-import { useEffect } from 'react';
+import '@/i18n';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { useEffect } from 'react';
 import 'react-native-reanimated';
-import '@/i18n';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useStore } from '@/store';
@@ -18,11 +18,12 @@ function useProtectedRoute() {
   const token = useStore((state) => state.token);
 
   useEffect(() => {
-    const inAuthGroup = segments[0] === '(tabs)';
+    const inAuthGroup = segments[0] === '(tabs)' || segments[0] === 'delivery';
+    const inLogin = segments[0] === 'login';
 
     if (!token && inAuthGroup) {
       router.replace('/login');
-    } else if (token && !inAuthGroup) {
+    } else if (token && inLogin) {
       router.replace('/(tabs)');
     }
   }, [token, segments]);
