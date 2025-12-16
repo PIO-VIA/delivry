@@ -76,3 +76,14 @@ export interface HistoriqueLivraison {
     adresse_livraison: string;
     montant_total: number;
 }
+
+/**
+ * Type pour les statistiques d'un livreur
+ */
+export interface StatistiquesLivreur {
+    total_livraisons: number;
+    livraisons_reussies: number;
+    livraisons_echouees: number;
+    taux_reussite: number;
+    montant_total_livre: number;
+}

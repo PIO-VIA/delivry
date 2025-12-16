@@ -37,6 +37,7 @@ interface AppState {
   logout: () => Promise<void>;
   fetchAssignedDeliveries: () => Promise<void>;
   fetchHistory: () => Promise<void>;
+  assignDelivery: (delivery: Commande) => Promise<void>;
 
   updateDeliveryStatus: (id: number, newStatus: StatutCommande) => Promise<void>;
   addDeliveryProof: (commandeId: number, photoUri: string) => Promise<void>;
@@ -204,6 +205,30 @@ export const useStore = create<AppState>((set, get) => ({
     } catch (err: any) {
       console.error('Fetch history error:', err);
       set({ error: 'Impossible de charger l\'historique', isLoading: false });
+    }
+  },
+
+  assignDelivery: async (delivery: Commande) => {
+    set({ isLoading: true });
+    try {
+      // Note: This function is called from the detail screen when a delivery person wants to take charge
+      // The API might not have a specific endpoint for self-assignment
+      // For now, we'll just update the local state and mark it as 'assignee'
+      // In a real scenario, there should be a backend endpoint for this
+
+      // If the backend has an endpoint like DeliveriesService.assignDelivery, use it:
+      // await DeliveriesService.assignDelivery(delivery.id, { delivery_user_id: get().livreur?.id! });
+
+      set((state) => ({
+        assignedDeliveries: state.assignedDeliveries.map((d) =>
+          d.id === delivery.id ? { ...d, statut: 'assignee' as StatutCommande, livreur_id: state.livreur?.id || null } : d
+        ),
+        isLoading: false
+      }));
+    } catch (err: any) {
+      console.error('Assign delivery error:', err);
+      set({ error: 'Erreur lors de l\'assignation', isLoading: false });
+      throw err;
     }
   },
 
