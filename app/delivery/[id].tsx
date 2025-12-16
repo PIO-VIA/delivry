@@ -1,6 +1,7 @@
 import { Icon } from '@/components/ui/icon';
+import MapView, { Marker, PROVIDER_DEFAULT } from '@/components/ui/map';
 import { useTheme } from '@/hooks/use-theme';
-import { Commande, StatutCommande } from '@/mock/types';
+import { Commande, StatutCommande } from '@/lib/types';
 import { useStore } from '@/store';
 import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -19,7 +20,6 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
 
 const { width } = Dimensions.get('window');
 
@@ -28,15 +28,14 @@ export default function DeliveryDetailScreen() {
   const { t } = useTranslation();
   const theme = useTheme();
   const router = useRouter();
-  const { livreur, commandes, assignDelivery, updateDeliveryStatus, addDeliveryProof, deliveryProofs } = useStore();
-
+  const { livreur, assignedDeliveries, assignDelivery, updateDeliveryStatus, addDeliveryProof, deliveryProofs } = useStore();
   const [delivery, setDelivery] = useState<Commande | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
-    const foundDelivery = commandes.find((c) => c.id === Number(id));
+    const foundDelivery = assignedDeliveries.find((c) => c.id === Number(id));
     setDelivery(foundDelivery || null);
-  }, [id, commandes]);
+  }, [id, assignedDeliveries]);
 
   if (!delivery) {
     return (

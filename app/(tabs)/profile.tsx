@@ -1,8 +1,7 @@
-import mockApi from '@/api/mockService';
 import { Icon } from '@/components/ui/icon';
 import { useTheme } from '@/hooks/use-theme';
 import i18n from '@/i18n';
-import { StatistiquesLivreur } from '@/mock/types';
+import { StatistiquesLivreur } from '@/lib/types';
 import { useStore } from '@/store';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
@@ -27,14 +26,16 @@ export default function ProfileScreen() {
   const loadStatistics = async () => {
     if (!livreur) return;
 
-    try {
-      const data = await mockApi.getMyStatistics(livreur.id);
-      setStats(data);
-    } catch (error) {
-      console.error('Error loading statistics:', error);
-    } finally {
-      setLoading(false);
-    }
+    // TODO: Fetch real statistics from API
+    // For now, we can use placeholder data or fetch from a new service
+    setStats({
+      total_livraisons: 0,
+      livraisons_reussies: 0,
+      livraisons_echouees: 0,
+      taux_reussite: 0,
+      montant_total_livre: 0
+    });
+    setLoading(false);
   };
 
   useEffect(() => {

@@ -1,6 +1,5 @@
-import mockApi from '@/api/mockService';
 import { useTheme } from '@/hooks/use-theme';
-import { Commande } from '@/mock/types';
+import { Commande } from '@/lib/types';
 import { useStore } from '@/store';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
@@ -10,31 +9,19 @@ import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, Touchabl
 export default function DeliveriesScreen() {
   const { t } = useTranslation();
   const theme = useTheme();
-  const { livreur, setCommandes } = useStore();
+  const { assignedDeliveries, fetchAssignedDeliveries, isLoading } = useStore();
 
-  const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [deliveries, setDeliveries] = useState<Commande[]>([]);
   const [filter, setFilter] = useState<'all' | 'disponible' | 'assignee' | 'en_route' | 'en_cours'>('all');
 
   const loadDeliveries = async () => {
-    if (!livreur) return;
-
-    try {
-      const data = await mockApi.getMyDeliveries(livreur.id);
-      setDeliveries(data);
-      setCommandes(data);
-    } catch (error) {
-      console.error('Error loading deliveries:', error);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
+    await fetchAssignedDeliveries();
+    setRefreshing(false);
   };
 
   useEffect(() => {
     loadDeliveries();
-  }, [livreur]);
+  }, []);
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -43,9 +30,9 @@ export default function DeliveriesScreen() {
 
   const getFilteredDeliveries = () => {
     if (filter === 'all') {
-      return deliveries.filter(d => ['disponible', 'assignee', 'en_route', 'en_cours'].includes(d.statut));
+      return assignedDeliveries.filter(d => ['disponible', 'assignee', 'en_route', 'en_cours'].includes(d.statut));
     }
-    return deliveries.filter(d => d.statut === filter);
+    return assignedDeliveries.filter(d => d.statut === filter);
   };
 
   const getStatusColor = (status: Commande['statut']) => {
@@ -127,7 +114,7 @@ export default function DeliveriesScreen() {
     </TouchableOpacity>
   );
 
-  if (loading) {
+  if (isLoading) {
     return (
       <View style={[styles.center, { backgroundColor: theme.colors.background }]}>
         <ActivityIndicator size="large" color={theme.colors.primary} />

@@ -1,6 +1,6 @@
 import { Icon } from '@/components/ui/icon';
 import { useTheme } from '@/hooks/use-theme';
-import { Commande } from '@/mock/types';
+import { Commande } from '@/lib/types';
 import { useStore } from '@/store';
 import * as Location from 'expo-location';
 import React, { useEffect, useState } from 'react';
@@ -10,7 +10,7 @@ import { ActivityIndicator, Linking, Platform, ScrollView, StyleSheet, Text, Tou
 export default function MapScreen() {
   const { t } = useTranslation();
   const theme = useTheme();
-  const { livreur, commandes } = useStore();
+  const { livreur, assignedDeliveries } = useStore();
 
   const [loading, setLoading] = useState(true);
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
@@ -36,7 +36,7 @@ export default function MapScreen() {
     })();
   }, []);
 
-  const activeDeliveries = commandes.filter(
+  const activeDeliveries = assignedDeliveries.filter(
     (c) => c.statut === 'en_route' || c.statut === 'en_cours'
   );
 

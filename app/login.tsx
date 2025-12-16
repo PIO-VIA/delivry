@@ -1,4 +1,3 @@
-import mockApi from '@/api/mockService';
 import { Icon } from '@/components/ui/icon';
 import { useTheme } from '@/hooks/use-theme';
 import { useStore } from '@/store';
@@ -10,12 +9,11 @@ import { ActivityIndicator, Alert, Image, KeyboardAvoidingView, Platform, StyleS
 export default function LoginScreen() {
   const { t, i18n } = useTranslation();
   const theme = useTheme();
-  const { setLivreur, setToken } = useStore();
+  const { login, isLoading, error } = useStore();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [showLanguageModal, setShowLanguageModal] = useState(false);
 
   const handleLogin = async () => {
@@ -24,21 +22,11 @@ export default function LoginScreen() {
       return;
     }
 
-    setLoading(true);
-    try {
-      const response = await mockApi.login(email, password);
-
-      if (response.success && response.data && response.token) {
-        setLivreur(response.data);
-        setToken(response.token);
-        router.replace('/(tabs)');
-      } else {
-        Alert.alert(t('common.error'), response.message || t('auth.loginError'));
-      }
-    } catch (error) {
-      Alert.alert(t('common.error'), t('auth.loginError'));
-    } finally {
-      setLoading(false);
+    const success = await login(email, password);
+    if (success) {
+      router.replace('/(tabs)');
+    } else {
+      Alert.alert(t('common.error'), error || t('auth.loginError'));
     }
   };
 
@@ -126,7 +114,7 @@ export default function LoginScreen() {
               onChangeText={setEmail}
               autoCapitalize="none"
               keyboardType="email-address"
-              editable={!loading}
+              editable={!isLoading}
             />
           </View>
 
@@ -149,7 +137,7 @@ export default function LoginScreen() {
               value={password}
               onChangeText={setPassword}
               secureTextEntry={!showPassword}
-              editable={!loading}
+              editable={!isLoading}
             />
             <TouchableOpacity
               style={[
@@ -169,12 +157,12 @@ export default function LoginScreen() {
             style={[
               styles.button,
               { backgroundColor: theme.colors.primary, shadowColor: theme.colors.primary },
-              loading && styles.buttonDisabled,
+              isLoading && styles.buttonDisabled,
             ]}
             onPress={handleLogin}
-            disabled={loading}
+            disabled={isLoading}
           >
-            {loading ? (
+            {isLoading ? (
               <ActivityIndicator color="#FFFFFF" />
             ) : (
               <Text style={styles.buttonText}>{t('auth.loginButton')}</Text>

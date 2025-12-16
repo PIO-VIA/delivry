@@ -1,7 +1,7 @@
-import mockApi from '@/api/mockService';
+
 import { useTheme } from '@/hooks/use-theme';
-import { getCommandeById } from '@/mock';
-import { HistoriqueLivraison } from '@/mock/types';
+import { HistoriqueLivraison } from '@/lib/types';
+
 import { useStore } from '@/store';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
@@ -11,31 +11,18 @@ import { ActivityIndicator, FlatList, Image, StyleSheet, Text, TouchableOpacity,
 export default function HistoryScreen() {
   const { t } = useTranslation();
   const theme = useTheme();
-  const { livreur } = useStore();
+  const { livreur, history, fetchHistory, isLoading } = useStore();
 
   const [loading, setLoading] = useState(true);
-  const [history, setHistory] = useState<HistoriqueLivraison[]>([]);
-
-  const loadHistory = async () => {
-    if (!livreur) return;
-
-    try {
-      const data = await mockApi.getMyHistory(livreur.id);
-      setHistory(data.sort((a, b) => new Date(b.date_livraison).getTime() - new Date(a.date_livraison).getTime()));
-    } catch (error) {
-      console.error('Error loading history:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   useEffect(() => {
-    loadHistory();
+    if (livreur) {
+      fetchHistory().finally(() => setLoading(false));
+    }
   }, [livreur]);
 
   const renderHistoryItem = ({ item }: { item: HistoriqueLivraison }) => {
-    const commande = getCommandeById(item.commande_id);
-    if (!commande) return null;
+    const commande = item;
 
     return (
       <TouchableOpacity

@@ -1,7 +1,6 @@
-import mockApi from '@/api/mockService';
 import { Icon } from '@/components/ui/icon';
 import { useTheme } from '@/hooks/use-theme';
-import { Notification } from '@/mock/types';
+import { Notification } from '@/lib/types';
 import { useStore } from '@/store';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -10,28 +9,16 @@ import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-nativ
 export default function NotificationsScreen() {
   const { t } = useTranslation();
   const theme = useTheme();
-  const { livreur, setNotifications } = useStore();
+  const { notifications } = useStore();
 
-  const [loading, setLoading] = useState(true);
-  const [notifications, setLocalNotifications] = useState<Notification[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  const loadNotifications = async () => {
-    if (!livreur) return;
-
-    try {
-      const data = await mockApi.getMyNotifications(livreur.id);
-      setLocalNotifications(data);
-      setNotifications(data);
-    } catch (error) {
-      console.error('Error loading notifications:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Notifications are loaded in the store or via push notifications
+  // For now we just display what's in the store
 
   useEffect(() => {
-    loadNotifications();
-  }, [livreur]);
+    // Optional: fetch notifications from API if needed
+  }, []);
 
   const getTypeIcon = (type: Notification['type']): 'package' | 'check-circle' | 'bell' => {
     switch (type) {

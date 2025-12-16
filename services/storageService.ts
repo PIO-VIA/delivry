@@ -1,5 +1,5 @@
+import { Commande } from '@/lib/types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Commande } from '@/mock/types';
 
 const STORAGE_KEYS = {
   ASSIGNED_DELIVERIES: '@deliveries:assigned',
