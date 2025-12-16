@@ -13,7 +13,7 @@ export class OrdersService {
      * @returns any Successful operation
      * @throws ApiError
      */
-    public static cd7E03021E72D9D799C12Dfe179C865(): CancelablePromise<{
+    public static index(): CancelablePromise<{
         data?: Array<Order>;
         links?: Record<string, any>;
         meta?: Record<string, any>;
@@ -29,7 +29,7 @@ export class OrdersService {
      * @returns any Order created successfully
      * @throws ApiError
      */
-    public static d690D6834318E9B064Df441E854De8B9(
+    public static store(
         requestBody: {
             customer_name: string;
             customer_email: string;
@@ -66,7 +66,7 @@ export class OrdersService {
      * @returns any Order status updated successfully
      * @throws ApiError
      */
-    public static ca851Ecbdeb079209Abac2E00C4A6359(
+    public static updateStatus(
         order: number,
         requestBody: {
             /**
@@ -99,7 +99,7 @@ export class OrdersService {
      * @returns Order Successful operation
      * @throws ApiError
      */
-    public static c29621029E70F65247909D3E09031118(
+    public static show(
         id: number,
     ): CancelablePromise<Order> {
         return __request(OpenAPI, {
@@ -120,7 +120,7 @@ export class OrdersService {
      * @returns any User's orders retrieved successfully
      * @throws ApiError
      */
-    public static bbe2Ec3088F531Fcb7Cb01B1B2C8Fa89(
+    public static myOrders(
         status?: string,
     ): CancelablePromise<{
         data?: Array<OrderResource>;

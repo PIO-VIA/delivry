@@ -11,7 +11,7 @@ export class DeliveriesService {
      * @returns any List of pending orders
      * @throws ApiError
      */
-    public static be3212B130Cf9Cb314360583576(): CancelablePromise<any> {
+    public static getPendingDeliveries(): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/deliveries/pending',
@@ -27,7 +27,7 @@ export class DeliveriesService {
      * @returns any Order assigned successfully
      * @throws ApiError
      */
-    public static df5E30Aeac209B67Af78B8F64Cb4Ef93(
+    public static assignDelivery(
         order: number,
         requestBody: {
             delivery_user_id: number;
@@ -52,7 +52,7 @@ export class DeliveriesService {
      * @returns any List of deliveries
      * @throws ApiError
      */
-    public static b1710B79E368Dde26652D27376Ea(): CancelablePromise<any> {
+    public static getMyDeliveries(): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/deliveries/my',
@@ -66,7 +66,7 @@ export class DeliveriesService {
      * @returns any Liste des commandes terminées.
      * @throws ApiError
      */
-    public static a8E060Acca5Eb87A6660C2247F1178B9(): CancelablePromise<any> {
+    public static getDeliveryHistory(): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/deliveries/history',
@@ -82,7 +82,7 @@ export class DeliveriesService {
      * @returns any Status updated successfully
      * @throws ApiError
      */
-    public static ac72B6646F9Cb07D9C89Fc4E5Bf8A1(
+    public static updateStatus(
         order: number,
         requestBody: {
             status: 'EN_ROUTE' | 'DELIVERED' | 'FAILED';
@@ -107,7 +107,7 @@ export class DeliveriesService {
      * @returns any Location updated successfully
      * @throws ApiError
      */
-    public static a9311624E529B78B043Ffdf1Fb70B7Db(
+    public static updateLocation(
         requestBody: {
             latitude: number;
             longitude: number;
@@ -128,7 +128,7 @@ export class DeliveriesService {
      * @returns any List of live locations
      * @throws ApiError
      */
-    public static aba8C7Cb27856320D7387Bcc142Ff0(): CancelablePromise<any> {
+    public static getLiveLocations(): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/deliveries/live/map',
@@ -143,7 +143,7 @@ export class DeliveriesService {
      * @returns any Proof URL retrieved successfully
      * @throws ApiError
      */
-    public static bff3Bc4B0Ebb03D6949E5F5D7A93(
+    public static getProof(
         order: number,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
@@ -165,7 +165,7 @@ export class DeliveriesService {
      * @returns any Proof uploaded successfully
      * @throws ApiError
      */
-    public static d9E4A2930E06E32E86Ffc071382D8694(
+    public static uploadProof(
         order: number,
         formData: {
             proof_image?: Blob;
