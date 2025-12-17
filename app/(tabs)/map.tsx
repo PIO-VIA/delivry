@@ -1,22 +1,30 @@
+import { ScreenContainer } from '@/components/screen-container';
+import { SwipeableTabWrapper } from '@/components/swipeable-tab-wrapper';
 import { Icon } from '@/components/ui/icon';
+import { useResponsiveLayout } from '@/hooks/use-responsive-layout';
 import { useTheme } from '@/hooks/use-theme';
 import { Commande } from '@/lib/types';
 import { useStore } from '@/store';
 import * as Location from 'expo-location';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Linking, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 
 export default function MapScreen() {
   const { t } = useTranslation();
   const theme = useTheme();
   const { livreur, assignedDeliveries } = useStore();
+  const { isLandscape } = useResponsiveLayout();
 
   const [loading, setLoading] = useState(true);
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const mapRef = useRef<MapView>(null);
 
   useEffect(() => {
+    let locationSubscription: Location.LocationSubscription | null = null;
+
     (async () => {
       try {
         const { status } = await Location.requestForegroundPermissionsAsync();
@@ -26,14 +34,33 @@ export default function MapScreen() {
           return;
         }
 
-        const currentLocation = await Location.getCurrentPositionAsync({});
+        const currentLocation = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.High,
+        });
         setLocation(currentLocation);
+        setLoading(false);
+
+        locationSubscription = await Location.watchPositionAsync(
+          {
+            accuracy: Location.Accuracy.High,
+            timeInterval: 10000,
+            distanceInterval: 10,
+          },
+          (newLocation) => {
+            setLocation(newLocation);
+          }
+        );
       } catch (error) {
         setErrorMsg(t('map.locationError'));
-      } finally {
         setLoading(false);
       }
     })();
+
+    return () => {
+      if (locationSubscription) {
+        locationSubscription.remove();
+      }
+    };
   }, []);
 
   const activeDeliveries = assignedDeliveries.filter(
@@ -80,27 +107,37 @@ export default function MapScreen() {
 
   if (loading) {
     return (
-      <View style={[styles.center, { backgroundColor: theme.colors.background }]}>
-        <ActivityIndicator size="large" color={theme.colors.primary} />
-      </View>
+      <ScreenContainer>
+        <SwipeableTabWrapper>
+          <View style={styles.center}>
+            <ActivityIndicator size="large" color={theme.colors.primary} />
+          </View>
+        </SwipeableTabWrapper>
+      </ScreenContainer>
     );
   }
 
   if (errorMsg || !location) {
     return (
-      <View style={[styles.center, { backgroundColor: theme.colors.background }]}>
-        <Text style={[styles.errorText, { color: theme.colors.error }]}>
-          {errorMsg || t('common.error')}
-        </Text>
-        <Text style={[styles.hintText, { color: theme.colors.textSecondary }]}>
-          {t('map.permissionHint')}
-        </Text>
-      </View>
+      <ScreenContainer>
+        <SwipeableTabWrapper>
+          <View style={styles.center}>
+            <Text style={[styles.errorText, { color: theme.colors.error }]}>
+              {errorMsg || t('common.error')}
+            </Text>
+            <Text style={[styles.hintText, { color: theme.colors.textSecondary }]}>
+              {t('map.permissionHint')}
+            </Text>
+          </View>
+        </SwipeableTabWrapper>
+      </ScreenContainer>
     );
   }
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <ScreenContainer edges={['bottom']}>
+      <SwipeableTabWrapper>
+        <ScrollView style={styles.container} contentContainerStyle={isLandscape && styles.contentLandscape}>
       <View style={[styles.locationCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
         <View style={styles.locationHeader}>
           <Icon name="map-pin" size={20} color={theme.colors.primary} />
@@ -216,7 +253,9 @@ export default function MapScreen() {
           })
         )}
       </View>
-    </ScrollView>
+        </ScrollView>
+      </SwipeableTabWrapper>
+    </ScreenContainer>
   );
 }
 
@@ -374,5 +413,8 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 16,
     fontWeight: '500',
+  },
+  contentLandscape: {
+    paddingHorizontal: 24,
   },
 });

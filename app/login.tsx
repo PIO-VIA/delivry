@@ -1,15 +1,18 @@
+import { ScreenContainer } from '@/components/screen-container';
 import { Icon } from '@/components/ui/icon';
+import { useResponsiveLayout } from '@/hooks/use-responsive-layout';
 import { useTheme } from '@/hooks/use-theme';
 import { useStore } from '@/store';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Alert, Image, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 export default function LoginScreen() {
   const { t, i18n } = useTranslation();
   const theme = useTheme();
   const { login, isLoading, error } = useStore();
+  const { isLandscape } = useResponsiveLayout();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -41,11 +44,19 @@ export default function LoginScreen() {
   ];
 
   return (
-    <KeyboardAvoidingView
-      style={[styles.container, { backgroundColor: theme.colors.background }]}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <View style={styles.content}>
+    <ScreenContainer withoutSafeArea>
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <ScrollView
+          contentContainerStyle={[
+            styles.content,
+            isLandscape && styles.contentLandscape,
+          ]}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
         <TouchableOpacity
           style={[styles.languageButton, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}
           onPress={() => setShowLanguageModal(!showLanguageModal)}
@@ -82,22 +93,22 @@ export default function LoginScreen() {
           </View>
         )}
 
-        <View style={styles.logoContainer}>
+        <View style={[styles.logoContainer, isLandscape && styles.logoContainerLandscape]}>
           <Image
             source={require('@/assets/images/logo.png')}
-            style={styles.logo}
+            style={[styles.logo, isLandscape && styles.logoLandscape]}
             resizeMode="contain"
           />
-          <Text style={[styles.appName, { color: theme.colors.primary }]}>
+          <Text style={[styles.appName, { color: theme.colors.primary }, isLandscape && styles.appNameLandscape]}>
             Delivery<Text style={{ color: theme.colors.secondary }}>Pro</Text>
           </Text>
         </View>
 
-        <Text style={[styles.title, { color: theme.colors.text }]}>
+        <Text style={[styles.title, { color: theme.colors.text }, isLandscape && styles.titleLandscape]}>
           {t('auth.login')}
         </Text>
 
-        <View style={styles.form}>
+        <View style={[styles.form, isLandscape && styles.formLandscape]}>
           <View style={[styles.inputContainer, { shadowColor: theme.colors.shadow }]}>
             <TextInput
               style={[
@@ -169,12 +180,9 @@ export default function LoginScreen() {
             )}
           </TouchableOpacity>
         </View>
-
-        <Text style={[styles.hint, { color: theme.colors.textSecondary }]}>
-          Dev: franck@delivery.com / password123
-        </Text>
-      </View>
-    </KeyboardAvoidingView>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </ScreenContainer>
   );
 }
 
@@ -316,5 +324,28 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     flex: 1,
+  },
+  contentLandscape: {
+    paddingVertical: 16,
+    paddingHorizontal: 48,
+  },
+  logoContainerLandscape: {
+    marginBottom: 16,
+  },
+  logoLandscape: {
+    width: 80,
+    height: 80,
+    marginBottom: 8,
+  },
+  appNameLandscape: {
+    fontSize: 22,
+  },
+  titleLandscape: {
+    fontSize: 20,
+    marginBottom: 16,
+  },
+  formLandscape: {
+    maxWidth: 500,
+    alignSelf: 'center',
   },
 });

@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "livraison",
-    "slug": "livraison",
+    "name": "deliver",
+    "slug": "deliver",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/logo.png",
-    "scheme": "livraison",
+    "icon": "./assets/images/logo2.png",
+    "scheme": "deliver",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
@@ -13,7 +13,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/logo.png",
+        "foregroundImage": "./assets/images/logo2.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,

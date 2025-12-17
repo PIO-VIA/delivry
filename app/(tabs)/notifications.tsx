@@ -1,4 +1,7 @@
+import { ScreenContainer } from '@/components/screen-container';
+import { SwipeableTabWrapper } from '@/components/swipeable-tab-wrapper';
 import { Icon } from '@/components/ui/icon';
+import { useResponsiveLayout } from '@/hooks/use-responsive-layout';
 import { useTheme } from '@/hooks/use-theme';
 import { Notification } from '@/lib/types';
 import { useStore } from '@/store';
@@ -10,6 +13,7 @@ export default function NotificationsScreen() {
   const { t } = useTranslation();
   const theme = useTheme();
   const { notifications } = useStore();
+  const { isLandscape } = useResponsiveLayout();
 
   const [loading, setLoading] = useState(false);
 
@@ -87,29 +91,35 @@ export default function NotificationsScreen() {
 
   if (loading) {
     return (
-      <View style={[styles.center, { backgroundColor: theme.colors.background }]}>
-        <ActivityIndicator size="large" color={theme.colors.primary} />
-      </View>
+      <ScreenContainer>
+        <SwipeableTabWrapper>
+          <View style={styles.center}>
+            <ActivityIndicator size="large" color={theme.colors.primary} />
+          </View>
+        </SwipeableTabWrapper>
+      </ScreenContainer>
     );
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <FlatList
-        data={notifications}
-        renderItem={renderNotification}
-        keyExtractor={(item) => item.id.toString()}
-        contentContainerStyle={styles.listContent}
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Icon name="bell" size={48} color={theme.colors.textSecondary} />
-            <Text style={[styles.emptyText, { color: theme.colors.textSecondary }]}>
-              {t('notifications.noNotifications')}
-            </Text>
-          </View>
-        }
-      />
-    </View>
+    <ScreenContainer edges={['bottom']}>
+      <SwipeableTabWrapper>
+        <FlatList
+          data={notifications}
+          renderItem={renderNotification}
+          keyExtractor={(item) => item.id.toString()}
+          contentContainerStyle={[styles.listContent, isLandscape && styles.listContentLandscape]}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Icon name="bell" size={48} color={theme.colors.textSecondary} />
+              <Text style={[styles.emptyText, { color: theme.colors.textSecondary }]}>
+                {t('notifications.noNotifications')}
+              </Text>
+            </View>
+          }
+        />
+      </SwipeableTabWrapper>
+    </ScreenContainer>
   );
 }
 
@@ -180,5 +190,8 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 18,
     fontWeight: '600',
+  },
+  listContentLandscape: {
+    paddingHorizontal: 24,
   },
 });

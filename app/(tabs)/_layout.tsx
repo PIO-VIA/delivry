@@ -42,7 +42,7 @@ export default function TabLayout() {
         headerShown: true,
         headerStyle: {
           backgroundColor: theme.colors.background,
-          height: 100, // Taller header for better logo presentation
+          height: 100,
           shadowColor: theme.colors.shadow,
           shadowOffset: { width: 0, height: 2 },
           shadowOpacity: 0.1,
@@ -56,6 +56,7 @@ export default function TabLayout() {
           fontSize: 12,
           fontWeight: '600',
         },
+        animation: 'shift',
       }}>
       <Tabs.Screen
         name="index"

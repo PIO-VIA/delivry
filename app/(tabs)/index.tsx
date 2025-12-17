@@ -1,3 +1,6 @@
+import { ScreenContainer } from '@/components/screen-container';
+import { SwipeableTabWrapper } from '@/components/swipeable-tab-wrapper';
+import { useResponsiveLayout } from '@/hooks/use-responsive-layout';
 import { useTheme } from '@/hooks/use-theme';
 import { Commande } from '@/lib/types';
 import { useStore } from '@/store';
@@ -10,6 +13,7 @@ export default function DeliveriesScreen() {
   const { t } = useTranslation();
   const theme = useTheme();
   const { assignedDeliveries, fetchAssignedDeliveries, isLoading } = useStore();
+  const { isLandscape } = useResponsiveLayout();
 
   const [refreshing, setRefreshing] = useState(false);
   const [filter, setFilter] = useState<'all' | 'disponible' | 'assignee' | 'en_route' | 'en_cours'>('all');
@@ -116,17 +120,22 @@ export default function DeliveriesScreen() {
 
   if (isLoading) {
     return (
-      <View style={[styles.center, { backgroundColor: theme.colors.background }]}>
-        <ActivityIndicator size="large" color={theme.colors.primary} />
-      </View>
+      <ScreenContainer>
+        <SwipeableTabWrapper>
+          <View style={styles.center}>
+            <ActivityIndicator size="large" color={theme.colors.primary} />
+          </View>
+        </SwipeableTabWrapper>
+      </ScreenContainer>
     );
   }
 
   const filteredDeliveries = getFilteredDeliveries();
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <View style={styles.filterContainer}>
+    <ScreenContainer edges={['bottom']}>
+      <SwipeableTabWrapper>
+        <View style={[styles.filterContainer, isLandscape && styles.filterContainerLandscape]}>
         {(['all', 'disponible', 'assignee', 'en_route', 'en_cours'] as const).map((f) => (
           <TouchableOpacity
             key={f}
@@ -153,7 +162,13 @@ export default function DeliveriesScreen() {
         data={filteredDeliveries}
         renderItem={renderDeliveryItem}
         keyExtractor={(item) => item.id.toString()}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={[
+          styles.listContent,
+          isLandscape && styles.listContentLandscape,
+        ]}
+        numColumns={isLandscape ? 2 : 1}
+        key={isLandscape ? 'landscape' : 'portrait'}
+        columnWrapperStyle={isLandscape ? styles.columnWrapper : undefined}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -169,7 +184,8 @@ export default function DeliveriesScreen() {
           </View>
         }
       />
-    </View>
+      </SwipeableTabWrapper>
+    </ScreenContainer>
   );
 }
 
@@ -277,5 +293,14 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 16,
     fontWeight: '500',
+  },
+  filterContainerLandscape: {
+    paddingHorizontal: 24,
+  },
+  listContentLandscape: {
+    paddingHorizontal: 24,
+  },
+  columnWrapper: {
+    gap: 16,
   },
 });

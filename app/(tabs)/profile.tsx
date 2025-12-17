@@ -1,7 +1,11 @@
+import { ScreenContainer } from '@/components/screen-container';
+import { SwipeableTabWrapper } from '@/components/swipeable-tab-wrapper';
 import { Icon } from '@/components/ui/icon';
+import { useResponsiveLayout } from '@/hooks/use-responsive-layout';
 import { useTheme } from '@/hooks/use-theme';
 import i18n from '@/i18n';
 import { StatistiquesLivreur } from '@/lib/types';
+import { getUserAvatar } from '@/lib/utils';
 import { useStore } from '@/store';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
@@ -14,6 +18,7 @@ export default function ProfileScreen() {
   const theme = useTheme();
   const router = useRouter();
   const { livreur, setLivreur, logout, language, setLanguage, theme: themeMode, setTheme } = useStore();
+  const { isLandscape } = useResponsiveLayout();
 
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<StatistiquesLivreur | null>(null);
@@ -126,16 +131,22 @@ export default function ProfileScreen() {
 
   if (!livreur) {
     return (
-      <View style={[styles.center, { backgroundColor: theme.colors.background }]}>
-        <Text style={[styles.emptyText, { color: theme.colors.textSecondary }]}>
-          {t('common.error')}
-        </Text>
-      </View>
+      <ScreenContainer>
+        <SwipeableTabWrapper>
+          <View style={styles.center}>
+            <Text style={[styles.emptyText, { color: theme.colors.textSecondary }]}>
+              {t('common.error')}
+            </Text>
+          </View>
+        </SwipeableTabWrapper>
+      </ScreenContainer>
     );
   }
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <ScreenContainer edges={['bottom']}>
+      <SwipeableTabWrapper>
+        <ScrollView style={styles.container} contentContainerStyle={isLandscape && styles.contentLandscape}>
       {/* Header / Profile Card */}
       <View style={styles.headerContainer}>
         <View style={[styles.profileCard, { backgroundColor: theme.colors.card, shadowColor: theme.colors.shadow }]}>
@@ -152,7 +163,14 @@ export default function ProfileScreen() {
           </View>
 
           <View style={styles.avatarContainer}>
-            <Image source={{ uri: isEditing ? editPhoto : livreur.photo_url }} style={styles.avatar} />
+            <Image
+              source={
+                isEditing && editPhoto
+                  ? { uri: editPhoto }
+                  : getUserAvatar(livreur)
+              }
+              style={styles.avatar}
+            />
 
             {isEditing && (
               <>
@@ -323,7 +341,9 @@ export default function ProfileScreen() {
       </TouchableOpacity>
 
       <View style={{ height: 40 }} />
-    </ScrollView>
+        </ScrollView>
+      </SwipeableTabWrapper>
+    </ScreenContainer>
   );
 }
 
@@ -553,5 +573,8 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
+  },
+  contentLandscape: {
+    paddingHorizontal: 24,
   },
 });

@@ -1,4 +1,6 @@
-
+import { ScreenContainer } from '@/components/screen-container';
+import { SwipeableTabWrapper } from '@/components/swipeable-tab-wrapper';
+import { useResponsiveLayout } from '@/hooks/use-responsive-layout';
 import { useTheme } from '@/hooks/use-theme';
 import { HistoriqueLivraison } from '@/lib/types';
 
@@ -12,6 +14,7 @@ export default function HistoryScreen() {
   const { t } = useTranslation();
   const theme = useTheme();
   const { livreur, history, fetchHistory, isLoading } = useStore();
+  const { isLandscape } = useResponsiveLayout();
 
   const [loading, setLoading] = useState(true);
 
@@ -100,28 +103,34 @@ export default function HistoryScreen() {
 
   if (loading) {
     return (
-      <View style={[styles.center, { backgroundColor: theme.colors.background }]}>
-        <ActivityIndicator size="large" color={theme.colors.primary} />
-      </View>
+      <ScreenContainer>
+        <SwipeableTabWrapper>
+          <View style={styles.center}>
+            <ActivityIndicator size="large" color={theme.colors.primary} />
+          </View>
+        </SwipeableTabWrapper>
+      </ScreenContainer>
     );
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <FlatList
-        data={history}
-        renderItem={renderHistoryItem}
-        keyExtractor={(item) => item.id.toString()}
-        contentContainerStyle={styles.listContent}
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text style={[styles.emptyText, { color: theme.colors.textSecondary }]}>
-              {t('history.noHistory')}
-            </Text>
-          </View>
-        }
-      />
-    </View>
+    <ScreenContainer edges={['bottom']}>
+      <SwipeableTabWrapper>
+        <FlatList
+          data={history}
+          renderItem={renderHistoryItem}
+          keyExtractor={(item) => item.id.toString()}
+          contentContainerStyle={[styles.listContent, isLandscape && styles.listContentLandscape]}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Text style={[styles.emptyText, { color: theme.colors.textSecondary }]}>
+                {t('history.noHistory')}
+              </Text>
+            </View>
+          }
+        />
+      </SwipeableTabWrapper>
+    </ScreenContainer>
   );
 }
 
@@ -221,5 +230,8 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 16,
     fontWeight: '500',
+  },
+  listContentLandscape: {
+    paddingHorizontal: 24,
   },
 });
