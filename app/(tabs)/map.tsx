@@ -40,10 +40,20 @@ export default function MapScreen() {
         setLocation(currentLocation);
         setLoading(false);
 
+        // Animate map to user location initially
+        if (mapRef.current && currentLocation) {
+          mapRef.current.animateToRegion({
+            latitude: currentLocation.coords.latitude,
+            longitude: currentLocation.coords.longitude,
+            latitudeDelta: 0.01,
+            longitudeDelta: 0.01,
+          }, 1000);
+        }
+
         locationSubscription = await Location.watchPositionAsync(
           {
             accuracy: Location.Accuracy.High,
-            timeInterval: 10000,
+            timeInterval: 5000,
             distanceInterval: 10,
           },
           (newLocation) => {
@@ -62,6 +72,10 @@ export default function MapScreen() {
       }
     };
   }, []);
+
+  // Update map camera when location changes significantly if needed, 
+  // but usually we let user move map unless we want "follow mode". 
+  // For now, we center on load.
 
   const activeDeliveries = assignedDeliveries.filter(
     (c) => c.statut === 'en_route' || c.statut === 'en_cours'
@@ -137,123 +151,139 @@ export default function MapScreen() {
   return (
     <ScreenContainer edges={['bottom']}>
       <SwipeableTabWrapper>
-        <ScrollView style={styles.container} contentContainerStyle={isLandscape && styles.contentLandscape}>
-      <View style={[styles.locationCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
-        <View style={styles.locationHeader}>
-          <Icon name="map-pin" size={20} color={theme.colors.primary} />
-          <Text style={[styles.locationLabel, { color: theme.colors.textSecondary }]}>
-            {t('map.currentLocation')}
-          </Text>
-        </View>
-        {livreur && (
-          <Text style={[styles.locationText, { color: theme.colors.text }]}>
-            {livreur.adresse}
-          </Text>
-        )}
-        <Text style={[styles.coordsText, { color: theme.colors.textSecondary }]}>
-          {location.coords.latitude.toFixed(6)}, {location.coords.longitude.toFixed(6)}
-        </Text>
-      </View>
+        <View style={styles.container}>
+          {/* Map Container */}
+          <View style={styles.mapContainer}>
+            <MapView
+              ref={mapRef}
+              style={styles.map}
+              provider={PROVIDER_GOOGLE}
+              showsUserLocation={true}
+              showsMyLocationButton={true}
+              initialRegion={{
+                latitude: location.coords.latitude,
+                longitude: location.coords.longitude,
+                latitudeDelta: 0.01,
+                longitudeDelta: 0.01,
+              }}
+            >
+              {/* Show User Marker explicitly if needed, but showsUserLocation handles it */}
 
-      <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
-          {t('deliveries.inProgress')} ({activeDeliveries.length})
-        </Text>
+              {/* Show Delivery Markers */}
+              {activeDeliveries.map((delivery) => (
+                <Marker
+                  key={delivery.id}
+                  coordinate={{
+                    latitude: delivery.latitude,
+                    longitude: delivery.longitude,
+                  }}
+                  title={delivery.numero_commande}
+                  description={delivery.client_nom}
+                  pinColor={delivery.statut === 'en_cours' ? theme.colors.primary : theme.colors.info}
+                />
+              ))}
+            </MapView>
 
-        {activeDeliveries.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <Text style={[styles.emptyText, { color: theme.colors.textSecondary }]}>
-              {t('deliveries.noDeliveries')}
-            </Text>
+            {/* Location Info Overlay */}
+            <View style={[styles.locationOverlay, { backgroundColor: theme.colors.card }]}>
+              <Text style={[styles.coordsText, { color: theme.colors.textSecondary }]}>
+                {location.coords.latitude.toFixed(6)}, {location.coords.longitude.toFixed(6)}
+              </Text>
+            </View>
           </View>
-        ) : (
-          activeDeliveries.map((delivery) => {
-            const distance = calculateDistance(
-              location.coords.latitude,
-              location.coords.longitude,
-              delivery.latitude,
-              delivery.longitude
-            );
 
-            return (
-              <TouchableOpacity
-                key={delivery.id}
-                style={[styles.deliveryCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}
-                onPress={() => openInMaps(delivery)}
-              >
-                <View style={styles.cardHeader}>
-                  <View style={styles.headerLeft}>
-                    <Text style={[styles.orderNumber, { color: theme.colors.text }]}>
-                      {delivery.numero_commande}
-                    </Text>
-                    <Text style={[styles.customerName, { color: theme.colors.textSecondary }]}>
-                      {delivery.client_nom}
-                    </Text>
-                  </View>
-                  <View
-                    style={[
-                      styles.statusBadge,
-                      {
-                        backgroundColor:
-                          delivery.statut === 'en_cours'
-                            ? theme.colors.primary + '20'
-                            : theme.colors.info + '20',
-                      },
-                    ]}
-                  >
-                    <Text
-                      style={[
-                        styles.statusText,
-                        {
-                          color: delivery.statut === 'en_cours' ? theme.colors.primary : theme.colors.info,
-                        },
-                      ]}
+          {/* Deliveries List */}
+          <ScrollView style={styles.listContainer} contentContainerStyle={isLandscape && styles.contentLandscape}>
+            <View style={styles.section}>
+              <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
+                {t('deliveries.inProgress')} ({activeDeliveries.length})
+              </Text>
+
+              {activeDeliveries.length === 0 ? (
+                <View style={styles.emptyContainer}>
+                  <Text style={[styles.emptyText, { color: theme.colors.textSecondary }]}>
+                    {t('deliveries.noDeliveries')}
+                  </Text>
+                </View>
+              ) : (
+                activeDeliveries.map((delivery) => {
+                  const distance = calculateDistance(
+                    location.coords.latitude,
+                    location.coords.longitude,
+                    delivery.latitude,
+                    delivery.longitude
+                  );
+
+                  return (
+                    <TouchableOpacity
+                      key={delivery.id}
+                      style={[styles.deliveryCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}
+                      onPress={() => {
+                        openInMaps(delivery);
+                        // Also center map on this delivery
+                        mapRef.current?.animateToRegion({
+                          latitude: delivery.latitude,
+                          longitude: delivery.longitude,
+                          latitudeDelta: 0.005,
+                          longitudeDelta: 0.005,
+                        }, 500);
+                      }}
                     >
-                      {delivery.statut === 'en_cours' ? t('deliveries.statusInProgress') : t('deliveries.statusInRoute')}
-                    </Text>
-                  </View>
-                </View>
+                      <View style={styles.cardHeader}>
+                        <View style={styles.headerLeft}>
+                          <Text style={[styles.orderNumber, { color: theme.colors.text }]}>
+                            {delivery.numero_commande}
+                          </Text>
+                          <Text style={[styles.customerName, { color: theme.colors.textSecondary }]}>
+                            {delivery.client_nom}
+                          </Text>
+                        </View>
+                        <View
+                          style={[
+                            styles.statusBadge,
+                            {
+                              backgroundColor:
+                                delivery.statut === 'en_cours'
+                                  ? theme.colors.primary + '20'
+                                  : theme.colors.info + '20',
+                            },
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.statusText,
+                              {
+                                color: delivery.statut === 'en_cours' ? theme.colors.primary : theme.colors.info,
+                              },
+                            ]}
+                          >
+                            {delivery.statut === 'en_cours' ? t('deliveries.statusInProgress') : t('deliveries.statusInRoute')}
+                          </Text>
+                        </View>
+                      </View>
 
-                <View style={styles.cardBody}>
-                  <View style={styles.row}>
-                    <Icon name="map-pin" size={16} color={theme.colors.textSecondary} />
-                    <Text style={[styles.address, { color: theme.colors.text }]} numberOfLines={2}>
-                      {delivery.adresse_livraison}
-                    </Text>
-                  </View>
+                      <View style={styles.cardBody}>
+                        <View style={styles.row}>
+                          <Icon name="map-pin" size={16} color={theme.colors.textSecondary} />
+                          <Text style={[styles.address, { color: theme.colors.text }]} numberOfLines={2}>
+                            {delivery.adresse_livraison}
+                          </Text>
+                        </View>
 
-                  <View style={styles.row}>
-                    <Icon name="truck" size={16} color={theme.colors.primary} />
-                    <Text style={[styles.distance, { color: theme.colors.primary }]}>
-                      {distance}
-                    </Text>
-                  </View>
-
-                  <View style={styles.row}>
-                    <Icon name="dollar" size={16} color={theme.colors.success} />
-                    <Text style={[styles.amount, { color: theme.colors.success }]}>
-                      {delivery.montant_total.toLocaleString()} FCFA
-                    </Text>
-                  </View>
-
-                  <View style={styles.row}>
-                    <Icon name="phone" size={16} color={theme.colors.textSecondary} />
-                    <Text style={[styles.phone, { color: theme.colors.textSecondary }]}>
-                      {delivery.client_phone}
-                    </Text>
-                  </View>
-                </View>
-
-                <View style={[styles.navigateButton, { backgroundColor: theme.colors.primary }]}>
-                  <Icon name="navigation" size={18} color="#FFFFFF" />
-                  <Text style={styles.navigateText}>{t('map.navigate')}</Text>
-                </View>
-              </TouchableOpacity>
-            );
-          })
-        )}
-      </View>
-        </ScrollView>
+                        <View style={styles.row}>
+                          <Icon name="truck" size={16} color={theme.colors.primary} />
+                          <Text style={[styles.distance, { color: theme.colors.primary }]}>
+                            {distance}
+                          </Text>
+                        </View>
+                      </View>
+                    </TouchableOpacity>
+                  );
+                })
+              )}
+            </View>
+          </ScrollView>
+        </View>
       </SwipeableTabWrapper>
     </ScreenContainer>
   );
@@ -261,6 +291,27 @@ export default function MapScreen() {
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+    flexDirection: 'column',
+  },
+  mapContainer: {
+    height: 350, // Fixed height for map
+    width: '100%',
+    position: 'relative',
+  },
+  map: {
+    width: '100%',
+    height: '100%',
+  },
+  locationOverlay: {
+    position: 'absolute',
+    bottom: 16,
+    right: 16,
+    padding: 8,
+    borderRadius: 8,
+    opacity: 0.8,
+  },
+  listContainer: {
     flex: 1,
   },
   center: {
@@ -309,13 +360,11 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   coordsText: {
-    fontSize: 13,
-    opacity: 0.7,
-    fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
+    fontSize: 12,
+    fontWeight: 'bold',
   },
   section: {
     padding: 16,
-    paddingTop: 0,
   },
   sectionTitle: {
     fontSize: 22,
@@ -365,7 +414,7 @@ const styles = StyleSheet.create({
   },
   cardBody: {
     gap: 12,
-    marginBottom: 20,
+    marginBottom: 10,
   },
   row: {
     flexDirection: 'row',
