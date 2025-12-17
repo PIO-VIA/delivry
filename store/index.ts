@@ -94,10 +94,10 @@ const mapStatus = (apiStatus: string): StatutCommande => {
   }
 };
 
-const mapAppStatusToApi = (status: StatutCommande): 'EN_ROUTE' | 'DELIVERED' | 'FAILED' => {
+const mapAppStatusToApi = (status: StatutCommande): 'EN_ROUTE' | 'DELIVERED' | 'FAILED' | 'IN_DELIVERY' => {
   switch (status) {
     case 'en_route': return 'EN_ROUTE';
-    case 'en_cours': return 'EN_ROUTE'; // Mapping 'en_cours' to 'EN_ROUTE' for API
+    case 'en_cours': return 'IN_DELIVERY';
     case 'livre': return 'DELIVERED';
     case 'echec': return 'FAILED';
     default: return 'EN_ROUTE';
@@ -177,7 +177,15 @@ export const useStore = create<AppState>((set, get) => ({
       const response: any = await DeliveriesService.getMyDeliveries();
       // API returns { data: [...] }
       const data = response.data || response;
-      const deliveries = Array.isArray(data) ? data.map(mapOrderToCommande) : [];
+      const currentLivreurId = get().livreur?.id;
+      const deliveries = Array.isArray(data) ? data.map(order => {
+        const cmd = mapOrderToCommande(order);
+        // Force livreur_id for my deliveries if missing
+        if (!cmd.livreur_id && currentLivreurId) {
+          cmd.livreur_id = currentLivreurId;
+        }
+        return cmd;
+      }) : [];
       set({ assignedDeliveries: deliveries, isLoading: false });
     } catch (err: any) {
       console.error('Fetch deliveries error:', err);
@@ -239,7 +247,7 @@ export const useStore = create<AppState>((set, get) => ({
     set({ isLoading: true });
     try {
       const apiStatus = mapAppStatusToApi(newStatus);
-      await DeliveriesService.updateStatus(id, { status: apiStatus });
+      await DeliveriesService.updateStatus(id, { status: apiStatus as any });
 
       set((state) => ({
         assignedDeliveries: state.assignedDeliveries.map((d) =>
