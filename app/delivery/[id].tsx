@@ -14,6 +14,7 @@ import {
   Image,
   Linking,
   Platform,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -28,9 +29,16 @@ export default function DeliveryDetailScreen() {
   const { t } = useTranslation();
   const theme = useTheme();
   const router = useRouter();
-  const { livreur, assignedDeliveries, assignDelivery, updateDeliveryStatus, addDeliveryProof, deliveryProofs } = useStore();
+  const { livreur, assignedDeliveries, assignDelivery, updateDeliveryStatus, addDeliveryProof, deliveryProofs, fetchAssignedDeliveries } = useStore();
   const [delivery, setDelivery] = useState<Commande | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchAssignedDeliveries();
+    setRefreshing(false);
+  };
 
   useEffect(() => {
     const foundDelivery = assignedDeliveries.find((c) => c.id === Number(id));
@@ -208,7 +216,13 @@ export default function DeliveryDetailScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <ScrollView contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={{ paddingBottom: 120 }}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[theme.colors.primary]} />
+        }
+      >
         {/* Map Header */}
         <View style={styles.mapContainer}>
           <MapView

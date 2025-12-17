@@ -16,7 +16,7 @@ export default function DeliveriesScreen() {
   const { isLandscape } = useResponsiveLayout();
 
   const [refreshing, setRefreshing] = useState(false);
-  const [filter, setFilter] = useState<'all' | 'disponible' | 'assignee' | 'en_route' | 'en_cours'>('all');
+  const [filter, setFilter] = useState<'all' | 'assignee' | 'en_route' | 'en_cours' | 'livre' | 'echec'>('all');
 
   const loadDeliveries = async () => {
     await fetchAssignedDeliveries();
@@ -34,7 +34,7 @@ export default function DeliveriesScreen() {
 
   const getFilteredDeliveries = () => {
     if (filter === 'all') {
-      return assignedDeliveries.filter(d => ['disponible', 'assignee', 'en_route', 'en_cours'].includes(d.statut));
+      return assignedDeliveries;
     }
     return assignedDeliveries.filter(d => d.statut === filter);
   };
@@ -136,54 +136,54 @@ export default function DeliveriesScreen() {
     <ScreenContainer edges={['bottom']}>
       <SwipeableTabWrapper>
         <View style={[styles.filterContainer, isLandscape && styles.filterContainerLandscape]}>
-        {(['all', 'disponible', 'assignee', 'en_route', 'en_cours'] as const).map((f) => (
-          <TouchableOpacity
-            key={f}
-            style={[
-              styles.filterButton,
-              { borderColor: theme.colors.border },
-              filter === f && { backgroundColor: theme.colors.primary },
-            ]}
-            onPress={() => setFilter(f)}
-          >
-            <Text
+          {(['all', 'assignee', 'en_route', 'en_cours', 'livre', 'echec'] as const).map((f) => (
+            <TouchableOpacity
+              key={f}
               style={[
-                styles.filterText,
-                { color: filter === f ? '#FFFFFF' : theme.colors.text },
+                styles.filterButton,
+                { borderColor: theme.colors.border },
+                filter === f && { backgroundColor: theme.colors.primary },
               ]}
+              onPress={() => setFilter(f)}
             >
-              {f === 'all' ? t('deliveries.myDeliveries') : getStatusText(f as Commande['statut'])}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+              <Text
+                style={[
+                  styles.filterText,
+                  { color: filter === f ? '#FFFFFF' : theme.colors.text },
+                ]}
+              >
+                {f === 'all' ? t('deliveries.myDeliveries') : getStatusText(f as Commande['statut'])}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
 
-      <FlatList
-        data={filteredDeliveries}
-        renderItem={renderDeliveryItem}
-        keyExtractor={(item) => item.id.toString()}
-        contentContainerStyle={[
-          styles.listContent,
-          isLandscape && styles.listContentLandscape,
-        ]}
-        numColumns={isLandscape ? 2 : 1}
-        key={isLandscape ? 'landscape' : 'portrait'}
-        columnWrapperStyle={isLandscape ? styles.columnWrapper : undefined}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={handleRefresh}
-            tintColor={theme.colors.primary}
-          />
-        }
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text style={[styles.emptyText, { color: theme.colors.textSecondary }]}>
-              {t('deliveries.noDeliveries')}
-            </Text>
-          </View>
-        }
-      />
+        <FlatList
+          data={filteredDeliveries}
+          renderItem={renderDeliveryItem}
+          keyExtractor={(item) => item.id.toString()}
+          contentContainerStyle={[
+            styles.listContent,
+            isLandscape && styles.listContentLandscape,
+          ]}
+          numColumns={isLandscape ? 2 : 1}
+          key={isLandscape ? 'landscape' : 'portrait'}
+          columnWrapperStyle={isLandscape ? styles.columnWrapper : undefined}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+              tintColor={theme.colors.primary}
+            />
+          }
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Text style={[styles.emptyText, { color: theme.colors.textSecondary }]}>
+                {t('deliveries.noDeliveries')}
+              </Text>
+            </View>
+          }
+        />
       </SwipeableTabWrapper>
     </ScreenContainer>
   );

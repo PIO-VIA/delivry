@@ -85,7 +85,8 @@ const mapStatus = (apiStatus: string): StatutCommande => {
   switch (apiStatus) {
     case 'PENDING': return 'disponible';
     case 'ASSIGNED': return 'assignee';
-    case 'PROCESSING': return 'en_route'; // Or 'assignee' depending on flow
+    case 'PROCESSING': return 'assignee';
+    case 'EN_ROUTE': return 'en_route';
     case 'IN_DELIVERY': return 'en_cours';
     case 'DELIVERED': return 'livre';
     case 'FAILED': return 'echec';
@@ -94,10 +95,10 @@ const mapStatus = (apiStatus: string): StatutCommande => {
   }
 };
 
-const mapAppStatusToApi = (status: StatutCommande): 'EN_ROUTE' | 'DELIVERED' | 'FAILED' | 'IN_DELIVERY' => {
+const mapAppStatusToApi = (status: StatutCommande): 'EN_ROUTE' | 'DELIVERED' | 'FAILED' => {
   switch (status) {
     case 'en_route': return 'EN_ROUTE';
-    case 'en_cours': return 'IN_DELIVERY';
+    case 'en_cours': return 'EN_ROUTE'; // Keep EN_ROUTE, en_cours is local only
     case 'livre': return 'DELIVERED';
     case 'echec': return 'FAILED';
     default: return 'EN_ROUTE';
@@ -246,15 +247,28 @@ export const useStore = create<AppState>((set, get) => ({
   updateDeliveryStatus: async (id, newStatus) => {
     set({ isLoading: true });
     try {
-      const apiStatus = mapAppStatusToApi(newStatus);
-      await DeliveriesService.updateStatus(id, { status: apiStatus as any });
+      // en_cours is a local-only status for UX purposes
+      // It doesn't exist in the backend API, so we don't send it
+      if (newStatus === 'en_cours') {
+        // Only update local state
+        set((state) => ({
+          assignedDeliveries: state.assignedDeliveries.map((d) =>
+            d.id === id ? { ...d, statut: newStatus } : d
+          ),
+          isLoading: false
+        }));
+      } else {
+        // For other statuses, send to API
+        const apiStatus = mapAppStatusToApi(newStatus);
+        await DeliveriesService.updateStatus(id, { status: apiStatus as any });
 
-      set((state) => ({
-        assignedDeliveries: state.assignedDeliveries.map((d) =>
-          d.id === id ? { ...d, statut: newStatus } : d
-        ),
-        isLoading: false
-      }));
+        set((state) => ({
+          assignedDeliveries: state.assignedDeliveries.map((d) =>
+            d.id === id ? { ...d, statut: newStatus } : d
+          ),
+          isLoading: false
+        }));
+      }
     } catch (err: any) {
       console.error('Update status error:', err);
       set({ error: 'Erreur lors de la mise à jour du statut', isLoading: false });
