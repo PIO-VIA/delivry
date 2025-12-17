@@ -276,25 +276,40 @@ export const useStore = create<AppState>((set, get) => ({
   },
 
   addDeliveryProof: async (commandeId, photoUri) => {
-    set({ isLoading: true });
+    set({ isLoading: true, error: null });
     try {
-      // React Native specific: prepare file object
+      // React Native specific: Use native FormData and axios directly
+      // The generated client doesn't handle RN file objects properly
       const filename = photoUri.split('/').pop();
       const match = /\.(\w+)$/.exec(filename || '');
       const type = match ? `image/${match[1]}` : 'image/jpeg';
 
-      const fileObj = {
+      // Create native FormData
+      const formData = new FormData();
+      formData.append('proof_image', {
         uri: photoUri,
         name: filename || 'proof.jpg',
         type,
-      };
+      } as any);
+      formData.append('proof_type', 'photo');
 
-      // Cast to any because the generated client expects Blob but RN uses object
-      await DeliveriesService.uploadProof(commandeId, {
-        proof_image: fileObj as any,
-        proof_type: 'photo'
-      });
+      // Make direct axios call instead of using the generated client
+      const axios = require('axios').default;
+      const token = OpenAPI.TOKEN;
 
+      await axios.post(
+        `${OpenAPI.BASE}/api/deliveries/${commandeId}/proof`,
+        formData,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data',
+            'Accept': 'application/json',
+          },
+        }
+      );
+
+      // Only update state if upload succeeded
       set((state) => ({
         deliveryProofs: {
           ...state.deliveryProofs,
@@ -311,6 +326,8 @@ export const useStore = create<AppState>((set, get) => ({
     } catch (err: any) {
       console.error('Upload proof error:', err);
       set({ error: 'Erreur lors de l\'envoi de la preuve', isLoading: false });
+      // Propagate the error so the UI can handle it
+      throw err;
     }
   },
 
