@@ -69,23 +69,24 @@ const mapOrderToCommande = (order: any): Commande => ({
   numero_commande: order.order_number,
   statut: mapStatus(order.status),
   client_id: order.user_id || 0,
-  client_nom: `${order.customer_first_name || ''} ${order.customer_last_name || ''}`.trim(),
+  client_nom: order.customer_name || `${order.customer_first_name || ''} ${order.customer_last_name || ''}`.trim(),
   client_phone: order.customer_phone || '',
-  adresse_livraison: `${order.shipping_address || ''}, ${order.shipping_city || ''} ${order.shipping_zipcode || ''}`,
+  adresse_livraison: order.shipping_address || `${order.shipping_address || ''}, ${order.shipping_city || ''} ${order.shipping_zipcode || ''}`,
   latitude: 0, // TODO: Geocode or get from API if available
   longitude: 0,
-  montant_total: order.total || 0,
+  montant_total: parseFloat(order.total) || 0,
   date_commande: order.created_at,
   date_livraison_prevue: order.created_at, // Placeholder
   preuve_photo_url: null, // Loaded separately or not in list
-  livreur_id: null,
+  livreur_id: order.delivery_user_id || null,
 });
 
 const mapStatus = (apiStatus: string): StatutCommande => {
   switch (apiStatus) {
     case 'PENDING': return 'disponible';
-    case 'PROCESSING': return 'assignee'; // Or 'en_route' depending on flow
-    case 'IN_DELIVERY': return 'en_route'; // or 'en_cours'
+    case 'ASSIGNED': return 'assignee';
+    case 'PROCESSING': return 'en_route'; // Or 'assignee' depending on flow
+    case 'IN_DELIVERY': return 'en_cours';
     case 'DELIVERED': return 'livre';
     case 'FAILED': return 'echec';
     case 'CANCELED': return 'echec';
@@ -173,9 +174,10 @@ export const useStore = create<AppState>((set, get) => ({
   fetchAssignedDeliveries: async () => {
     set({ isLoading: true });
     try {
-      const response = await DeliveriesService.getMyDeliveries();
-      // Assuming response is an array of orders
-      const deliveries = Array.isArray(response) ? response.map(mapOrderToCommande) : [];
+      const response: any = await DeliveriesService.getMyDeliveries();
+      // API returns { data: [...] }
+      const data = response.data || response;
+      const deliveries = Array.isArray(data) ? data.map(mapOrderToCommande) : [];
       set({ assignedDeliveries: deliveries, isLoading: false });
     } catch (err: any) {
       console.error('Fetch deliveries error:', err);
@@ -186,9 +188,10 @@ export const useStore = create<AppState>((set, get) => ({
   fetchHistory: async () => {
     set({ isLoading: true });
     try {
-      const response = await DeliveriesService.getDeliveryHistory();
-      // Assuming response is an array of orders
-      const historyItems: HistoriqueLivraison[] = Array.isArray(response) ? response.map((order: any) => ({
+      const response: any = await DeliveriesService.getDeliveryHistory();
+      // API returns { data: [...] }
+      const data = response.data || response;
+      const historyItems: HistoriqueLivraison[] = Array.isArray(data) ? data.map((order: any) => ({
         id: order.id,
         commande_id: order.id,
         livreur_id: 0,
@@ -196,9 +199,9 @@ export const useStore = create<AppState>((set, get) => ({
         date_livraison: order.updated_at || order.created_at || new Date().toISOString(),
         preuve_photo_url: null, // TODO: Fetch proof if needed
         numero_commande: order.order_number || 'N/A',
-        client_nom: `${order.customer_first_name || ''} ${order.customer_last_name || ''}`.trim(),
-        adresse_livraison: `${order.shipping_address || ''}, ${order.shipping_city || ''} ${order.shipping_zipcode || ''}`,
-        montant_total: order.total || 0,
+        client_nom: order.customer_name || `${order.customer_first_name || ''} ${order.customer_last_name || ''}`.trim(),
+        adresse_livraison: order.shipping_address || `${order.shipping_address || ''}, ${order.shipping_city || ''} ${order.shipping_zipcode || ''}`,
+        montant_total: parseFloat(order.total) || 0,
       })) : [];
 
       set({ history: historyItems, isLoading: false });
