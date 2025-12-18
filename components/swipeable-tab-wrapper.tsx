@@ -30,8 +30,12 @@ export function SwipeableTabWrapper({ children }: SwipeableTabWrapperProps) {
   const navigateToTab = (index: number) => {
     if (index >= 0 && index < TAB_ROUTES.length) {
       const route = TAB_ROUTES[index];
-      const path = route === 'index' ? '/(tabs)' : `/ (tabs) / ${route} `;
-      router.push(path as any);
+      const path = route === 'index' ? '/(tabs)' : `/(tabs)/${route}`;
+      try {
+        router.push(path as any);
+      } catch (error) {
+        console.error('Navigation error:', error);
+      }
     }
   };
 

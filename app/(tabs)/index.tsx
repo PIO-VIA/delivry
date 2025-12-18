@@ -79,10 +79,18 @@ export default function DeliveriesScreen() {
     }
   };
 
+  const handleDeliveryPress = (deliveryId: number) => {
+    try {
+      router.push(`/delivery/${deliveryId}`);
+    } catch (error) {
+      console.error('Error navigating to delivery:', error);
+    }
+  };
+
   const renderDeliveryItem = ({ item }: { item: Commande }) => (
     <TouchableOpacity
       style={[styles.card, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}
-      onPress={() => router.push(`/delivery/${item.id}`)}
+      onPress={() => handleDeliveryPress(item.id)}
       activeOpacity={0.7}
     >
       <View style={styles.cardHeader}>

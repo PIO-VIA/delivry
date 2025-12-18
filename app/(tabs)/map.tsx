@@ -9,7 +9,7 @@ import * as Location from 'expo-location';
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Linking, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
 
 export default function MapScreen() {
   const { t } = useTranslation();
@@ -42,12 +42,16 @@ export default function MapScreen() {
 
         // Animate map to user location initially
         if (mapRef.current && currentLocation) {
-          mapRef.current.animateToRegion({
-            latitude: currentLocation.coords.latitude,
-            longitude: currentLocation.coords.longitude,
-            latitudeDelta: 0.01,
-            longitudeDelta: 0.01,
-          }, 1000);
+          try {
+            mapRef.current.animateToRegion({
+              latitude: currentLocation.coords.latitude,
+              longitude: currentLocation.coords.longitude,
+              latitudeDelta: 0.01,
+              longitudeDelta: 0.01,
+            }, 1000);
+          } catch (mapError) {
+            console.error('Map animation error:', mapError);
+          }
         }
 
         locationSubscription = await Location.watchPositionAsync(
@@ -61,6 +65,7 @@ export default function MapScreen() {
           }
         );
       } catch (error) {
+        console.error('Location error:', error);
         setErrorMsg(t('map.locationError'));
         setLoading(false);
       }
@@ -78,7 +83,11 @@ export default function MapScreen() {
   // For now, we center on load.
 
   const activeDeliveries = assignedDeliveries.filter(
-    (c) => c.statut === 'en_route' || c.statut === 'en_cours'
+    (c) => (c.statut === 'en_route' || c.statut === 'en_cours') &&
+           c.latitude != null &&
+           c.longitude != null &&
+           !isNaN(c.latitude) &&
+           !isNaN(c.longitude)
   );
 
   const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): string => {
@@ -157,7 +166,7 @@ export default function MapScreen() {
             <MapView
               ref={mapRef}
               style={styles.map}
-              provider={PROVIDER_GOOGLE}
+              provider={PROVIDER_DEFAULT}
               showsUserLocation={true}
               showsMyLocationButton={true}
               initialRegion={{
@@ -219,14 +228,18 @@ export default function MapScreen() {
                       key={delivery.id}
                       style={[styles.deliveryCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}
                       onPress={() => {
-                        openInMaps(delivery);
-                        // Also center map on this delivery
-                        mapRef.current?.animateToRegion({
-                          latitude: delivery.latitude,
-                          longitude: delivery.longitude,
-                          latitudeDelta: 0.005,
-                          longitudeDelta: 0.005,
-                        }, 500);
+                        try {
+                          openInMaps(delivery);
+                          // Also center map on this delivery
+                          mapRef.current?.animateToRegion({
+                            latitude: delivery.latitude,
+                            longitude: delivery.longitude,
+                            latitudeDelta: 0.005,
+                            longitudeDelta: 0.005,
+                          }, 500);
+                        } catch (error) {
+                          console.error('Error opening map:', error);
+                        }
                       }}
                     >
                       <View style={styles.cardHeader}>
