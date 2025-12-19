@@ -1,5 +1,5 @@
 import { Icon } from '@/components/ui/icon';
-import MapView, { Marker, PROVIDER_DEFAULT } from '@/components/ui/map';
+import OSMMap from '@/components/ui/OSMMap';
 import { useTheme } from '@/hooks/use-theme';
 import { Commande, StatutCommande } from '@/lib/types';
 import { useStore } from '@/store';
@@ -29,7 +29,7 @@ export default function DeliveryDetailScreen() {
   const { t } = useTranslation();
   const theme = useTheme();
   const router = useRouter();
-  const { livreur, assignedDeliveries, assignDelivery, updateDeliveryStatus, addDeliveryProof, deliveryProofs, fetchAssignedDeliveries } = useStore();
+  const { livreur, assignedDeliveries, history, assignDelivery, updateDeliveryStatus, addDeliveryProof, deliveryProofs, fetchAssignedDeliveries, fetchHistory } = useStore();
   const [delivery, setDelivery] = useState<Commande | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -41,9 +41,48 @@ export default function DeliveryDetailScreen() {
   };
 
   useEffect(() => {
-    const foundDelivery = assignedDeliveries.find((c) => c.id === Number(id));
-    setDelivery(foundDelivery || null);
-  }, [id, assignedDeliveries]);
+    const loadDelivery = async () => {
+      let foundDelivery = assignedDeliveries.find((c) => c.id === Number(id));
+
+        if (!foundDelivery) {
+            // Try looking in history
+            let historyItem = history.find(h => h.commande_id === Number(id));
+            
+            // If not in history and not loading, maybe we need to fetch history?
+            if (!historyItem && history.length === 0) {
+               // We can't await this inside the effect easily without tracking loading state locally or trusting store loading
+               // For now, let's rely on the user coming from history or map. 
+               // Ideally we would fetch single delivery from API
+            }
+
+            if (historyItem) {
+                // Map history item to Commande for display
+                foundDelivery = {
+                    id: historyItem.commande_id,
+                    numero_commande: historyItem.numero_commande,
+                    statut: historyItem.statut_final === 'livre' ? 'livre' : 'echec',
+                    client_id: 0,
+                    client_nom: historyItem.client_nom,
+                    client_phone: '', // Not in history item, maybe fetch?
+                    adresse_livraison: historyItem.adresse_livraison,
+                    latitude: 0, // Not in history
+                    longitude: 0, // Not in history
+                    montant_total: historyItem.montant_total,
+                    date_commande: historyItem.date_livraison,
+                    date_livraison_prevue: historyItem.date_livraison,
+                    preuve_photo_url: historyItem.preuve_photo_url,
+                    livreur_id: historyItem.livreur_id
+                };
+            }
+        }if (!foundDelivery && !livreur) {
+        // Maybe wait for livreur load?
+      }
+
+      setDelivery(foundDelivery || null);
+    };
+
+    loadDelivery();
+  }, [id, assignedDeliveries, history]);
 
   if (!delivery) {
     return (
@@ -225,29 +264,21 @@ export default function DeliveryDetailScreen() {
       >
         {/* Map Header */}
         <View style={styles.mapContainer}>
-          <MapView
+          <OSMMap
             style={styles.map}
-            provider={PROVIDER_DEFAULT}
             initialRegion={{
-              latitude: delivery.latitude,
-              longitude: delivery.longitude,
+              latitude: delivery.latitude || 0,
+              longitude: delivery.longitude || 0,
               latitudeDelta: 0.005,
               longitudeDelta: 0.005,
             }}
-            scrollEnabled={false}
-            zoomEnabled={false}
-          >
-            <Marker
-              coordinate={{
-                latitude: delivery.latitude,
-                longitude: delivery.longitude,
-              }}
-            >
-              <View style={[styles.markerContainer, { backgroundColor: theme.colors.primary }]}>
-                <Icon name="map-pin" size={24} color="#FFFFFF" />
-              </View>
-            </Marker>
-          </MapView>
+            markers={delivery.latitude && delivery.longitude ? [{
+              id: delivery.id,
+              latitude: delivery.latitude,
+              longitude: delivery.longitude,
+              color: theme.colors.primary
+            }] : []}
+          />
 
           <TouchableOpacity
             style={[styles.backButton, { backgroundColor: theme.colors.surface }]}

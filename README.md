@@ -5,7 +5,7 @@ Bienvenue sur **DeliveryPro**, une application mobile moderne et performante con
 ## 📱 Fonctionnalités Principales
 
 *   **Tableau de Bord Intuitif** : Vue d'ensemble des livraisons disponibles, en cours et terminées.
-*   **Carte Interactive** : Visualisation en temps réel des livraisons et de la position du livreur (basée sur `react-native-maps`).
+*   **Carte Interactive** : Visualisation en temps réel des livraisons et de la position du livreur (basée sur OpenStreetMap via `react-native-webview`).
 *   **Détails de Livraison Ergonomiques** : Interface type "Bottom Sheet" pour consulter les infos client, appeler en un clic, et naviguer vers la destination.
 *   **Gestion de Profil** : Modification des informations personnelles, changement de photo de profil, et consultation des statistiques de gains.
 *   **Preuve de Livraison** : Prise de photo intégrée pour valider les livraisons.
@@ -20,7 +20,7 @@ Ce projet est construit avec les dernières technologies de l'écosystème React
 *   **Framework** : [React Native](https://reactnative.dev/) avec [Expo](https://expo.dev/) (SDK 54).
 *   **Navigation** : [Expo Router](https://docs.expo.dev/router/introduction/) pour une navigation fluide basée sur les fichiers.
 *   **État Global** : [Zustand](https://github.com/pmndrs/zustand) pour une gestion d'état légère et performante.
-*   **Cartographie** : `react-native-maps` pour l'intégration des cartes Google/Apple Maps.
+*   **Cartographie** : OpenStreetMap + Leaflet (via `react-native-webview`) pour éviter la dépendance aux services Google Play.
 *   **UI/UX** : Design system personnalisé, icônes via `lucide-react-native`, et animations fluides.
 *   **Internationalisation** : `i18next` et `react-i18next`.
 *   **Stockage** : `AsyncStorage` pour la persistance des données locales.

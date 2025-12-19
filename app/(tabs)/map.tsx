@@ -1,6 +1,7 @@
 import { ScreenContainer } from '@/components/screen-container';
 import { SwipeableTabWrapper } from '@/components/swipeable-tab-wrapper';
 import { Icon } from '@/components/ui/icon';
+import OSMMap, { OSMMapRef } from '@/components/ui/OSMMap';
 import { useResponsiveLayout } from '@/hooks/use-responsive-layout';
 import { useTheme } from '@/hooks/use-theme';
 import { Commande } from '@/lib/types';
@@ -9,7 +10,6 @@ import * as Location from 'expo-location';
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Linking, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
 
 export default function MapScreen() {
   const { t } = useTranslation();
@@ -20,7 +20,7 @@ export default function MapScreen() {
   const [loading, setLoading] = useState(true);
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const mapRef = useRef<MapView>(null);
+  const mapRef = useRef<OSMMapRef>(null);
 
   useEffect(() => {
     let locationSubscription: Location.LocationSubscription | null = null;
@@ -84,10 +84,10 @@ export default function MapScreen() {
 
   const activeDeliveries = assignedDeliveries.filter(
     (c) => (c.statut === 'en_route' || c.statut === 'en_cours') &&
-           c.latitude != null &&
-           c.longitude != null &&
-           !isNaN(c.latitude) &&
-           !isNaN(c.longitude)
+      c.latitude != null &&
+      c.longitude != null &&
+      !isNaN(c.latitude) &&
+      !isNaN(c.longitude)
   );
 
   const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): string => {
@@ -163,35 +163,25 @@ export default function MapScreen() {
         <View style={styles.container}>
           {/* Map Container */}
           <View style={styles.mapContainer}>
-            <MapView
+            <OSMMap
               ref={mapRef}
               style={styles.map}
-              provider={PROVIDER_DEFAULT}
               showsUserLocation={true}
-              showsMyLocationButton={true}
               initialRegion={{
                 latitude: location.coords.latitude,
                 longitude: location.coords.longitude,
                 latitudeDelta: 0.01,
                 longitudeDelta: 0.01,
               }}
-            >
-              {/* Show User Marker explicitly if needed, but showsUserLocation handles it */}
-
-              {/* Show Delivery Markers */}
-              {activeDeliveries.map((delivery) => (
-                <Marker
-                  key={delivery.id}
-                  coordinate={{
-                    latitude: delivery.latitude,
-                    longitude: delivery.longitude,
-                  }}
-                  title={delivery.numero_commande}
-                  description={delivery.client_nom}
-                  pinColor={delivery.statut === 'en_cours' ? theme.colors.primary : theme.colors.info}
-                />
-              ))}
-            </MapView>
+              markers={activeDeliveries.map(d => ({
+                id: d.id,
+                latitude: d.latitude,
+                longitude: d.longitude,
+                title: d.numero_commande,
+                description: d.client_nom,
+                color: d.statut === 'en_cours' ? theme.colors.primary : theme.colors.info
+              }))}
+            />
 
             {/* Location Info Overlay */}
             <View style={[styles.locationOverlay, { backgroundColor: theme.colors.card }]}>

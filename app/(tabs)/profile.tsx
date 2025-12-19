@@ -17,7 +17,7 @@ export default function ProfileScreen() {
   const { t } = useTranslation();
   const theme = useTheme();
   const router = useRouter();
-  const { livreur, setLivreur, logout, language, setLanguage, theme: themeMode, setTheme } = useStore();
+  const { livreur, setLivreur, logout, language, setLanguage, theme: themeMode, setTheme, history, fetchHistory } = useStore();
   const { isLandscape } = useResponsiveLayout();
 
   const [loading, setLoading] = useState(true);
@@ -31,14 +31,24 @@ export default function ProfileScreen() {
   const loadStatistics = async () => {
     if (!livreur) return;
 
-    // TODO: Fetch real statistics from API
-    // For now, we can use placeholder data or fetch from a new service
+    // Ensure we have the latest history
+    if (history.length === 0) {
+      await fetchHistory();
+    }
+
+    const currentHistory = useStore.getState().history;
+
+    const total = currentHistory.length;
+    const successful = currentHistory.filter(h => h.statut_final === 'livre').length;
+    const failed = currentHistory.filter(h => h.statut_final === 'echec').length;
+    const totalAmount = currentHistory.reduce((sum, h) => sum + (h.statut_final === 'livre' ? h.montant_total : 0), 0);
+
     setStats({
-      total_livraisons: 0,
-      livraisons_reussies: 0,
-      livraisons_echouees: 0,
-      taux_reussite: 0,
-      montant_total_livre: 0
+      total_livraisons: total,
+      livraisons_reussies: successful,
+      livraisons_echouees: failed,
+      taux_reussite: total > 0 ? (successful / total) * 100 : 0,
+      montant_total_livre: totalAmount
     });
     setLoading(false);
   };
@@ -147,200 +157,200 @@ export default function ProfileScreen() {
     <ScreenContainer edges={['bottom']}>
       <SwipeableTabWrapper>
         <ScrollView style={styles.container} contentContainerStyle={isLandscape && styles.contentLandscape}>
-      {/* Header / Profile Card */}
-      <View style={styles.headerContainer}>
-        <View style={[styles.profileCard, { backgroundColor: theme.colors.card, shadowColor: theme.colors.shadow }]}>
-          <View style={styles.headerTop}>
+          {/* Header / Profile Card */}
+          <View style={styles.headerContainer}>
+            <View style={[styles.profileCard, { backgroundColor: theme.colors.card, shadowColor: theme.colors.shadow }]}>
+              <View style={styles.headerTop}>
+                <TouchableOpacity
+                  style={[styles.editButton, { backgroundColor: isEditing ? theme.colors.success : theme.colors.primary }]}
+                  onPress={() => isEditing ? handleSaveProfile() : setIsEditing(true)}
+                >
+                  <Icon name={isEditing ? 'check-circle' : 'settings'} size={20} color="#FFFFFF" />
+                  <Text style={styles.editButtonText}>
+                    {isEditing ? t('common.save') : t('common.edit')}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.avatarContainer}>
+                <Image
+                  source={
+                    isEditing && editPhoto
+                      ? { uri: editPhoto }
+                      : getUserAvatar(livreur)
+                  }
+                  style={styles.avatar}
+                />
+
+                {isEditing && (
+                  <>
+                    <TouchableOpacity
+                      style={[styles.cancelButton, { backgroundColor: theme.colors.error }]}
+                      onPress={() => {
+                        setIsEditing(false);
+                        setEditName(livreur.username);
+                        setEditEmail(livreur.email);
+                        setEditPhone(livreur.phone);
+                        setEditPhoto(livreur.photo_url);
+                      }}
+                    >
+                      <Icon name="x" size={20} color="#FFFFFF" />
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      style={[styles.editOverlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]}
+                      onPress={handlePickImage}
+                    >
+                      <Icon name="camera" size={24} color="#FFFFFF" />
+                    </TouchableOpacity>
+                  </>
+                )}
+              </View>
+
+              {isEditing ? (
+                <View style={styles.editForm}>
+                  <TextInput
+                    style={[styles.editInput, { color: theme.colors.text, borderColor: theme.colors.border, backgroundColor: theme.colors.surface }]}
+                    value={editName}
+                    onChangeText={setEditName}
+                    placeholder="Nom d'utilisateur"
+                    placeholderTextColor={theme.colors.placeholder}
+                  />
+                  <TextInput
+                    style={[styles.editInput, { color: theme.colors.text, borderColor: theme.colors.border, backgroundColor: theme.colors.surface }]}
+                    value={editEmail}
+                    onChangeText={setEditEmail}
+                    placeholder="Email"
+                    keyboardType="email-address"
+                    placeholderTextColor={theme.colors.placeholder}
+                  />
+                  <TextInput
+                    style={[styles.editInput, { color: theme.colors.text, borderColor: theme.colors.border, backgroundColor: theme.colors.surface }]}
+                    value={editPhone}
+                    onChangeText={setEditPhone}
+                    placeholder="Téléphone"
+                    keyboardType="phone-pad"
+                    placeholderTextColor={theme.colors.placeholder}
+                  />
+                </View>
+              ) : (
+                <View style={styles.infoContainer}>
+                  <Text style={[styles.name, { color: theme.colors.text }]}>{livreur.username}</Text>
+                  <Text style={[styles.email, { color: theme.colors.textSecondary }]}>{livreur.email}</Text>
+                  <Text style={[styles.phone, { color: theme.colors.textSecondary }]}>{livreur.phone}</Text>
+
+                  <View style={[styles.statusBadge, { backgroundColor: livreur.statut === 'en_ligne' ? theme.colors.success + '20' : theme.colors.error + '20' }]}>
+                    <View style={[styles.statusDot, { backgroundColor: livreur.statut === 'en_ligne' ? theme.colors.success : theme.colors.error }]} />
+                    <Text style={[styles.statusText, { color: livreur.statut === 'en_ligne' ? theme.colors.success : theme.colors.error }]}>
+                      {livreur.statut === 'en_ligne' ? t('profile.online') : t('profile.offline')}
+                    </Text>
+                  </View>
+                </View>
+              )}
+            </View>
+          </View>
+
+          {/* Statistics Section */}
+          <View style={styles.section}>
+            <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
+              {t('profile.statistics')}
+            </Text>
+
+            {loading ? (
+              <ActivityIndicator size="small" color={theme.colors.primary} style={{ marginVertical: 20 }} />
+            ) : stats ? (
+              <View style={styles.statsGrid}>
+                <View style={[styles.statCard, { backgroundColor: theme.colors.card, shadowColor: theme.colors.shadow }]}>
+                  <View style={[styles.statIcon, { backgroundColor: theme.colors.primary + '15' }]}>
+                    <Icon name="package" size={24} color={theme.colors.primary} />
+                  </View>
+                  <Text style={[styles.statValue, { color: theme.colors.text }]}>{stats.total_livraisons}</Text>
+                  <Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>{t('profile.totalDeliveries')}</Text>
+                </View>
+
+                <View style={[styles.statCard, { backgroundColor: theme.colors.card, shadowColor: theme.colors.shadow }]}>
+                  <View style={[styles.statIcon, { backgroundColor: theme.colors.success + '15' }]}>
+                    <Icon name="check-circle" size={24} color={theme.colors.success} />
+                  </View>
+                  <Text style={[styles.statValue, { color: theme.colors.text }]}>{stats.livraisons_reussies}</Text>
+                  <Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>{t('profile.successfulDeliveries')}</Text>
+                </View>
+
+                <View style={[styles.statCard, { backgroundColor: theme.colors.card, shadowColor: theme.colors.shadow }]}>
+                  <View style={[styles.statIcon, { backgroundColor: theme.colors.info + '15' }]}>
+                    <Icon name="trending-up" size={24} color={theme.colors.info} />
+                  </View>
+                  <Text style={[styles.statValue, { color: theme.colors.text }]}>{stats.taux_reussite.toFixed(0)}%</Text>
+                  <Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>{t('profile.successRate')}</Text>
+                </View>
+
+                <View style={[styles.statCard, { backgroundColor: theme.colors.card, shadowColor: theme.colors.shadow }]}>
+                  <View style={[styles.statIcon, { backgroundColor: theme.colors.warning + '15' }]}>
+                    <Icon name="dollar" size={24} color={theme.colors.warning} />
+                  </View>
+                  <Text style={[styles.statValue, { color: theme.colors.text }]}>{(stats.montant_total_livre / 1000).toFixed(1)}k</Text>
+                  <Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>Gains (FCFA)</Text>
+                </View>
+              </View>
+            ) : null}
+          </View>
+
+          {/* Settings Section */}
+          <View style={styles.section}>
+            <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
+              {t('settings.title')}
+            </Text>
+
             <TouchableOpacity
-              style={[styles.editButton, { backgroundColor: isEditing ? theme.colors.success : theme.colors.primary }]}
-              onPress={() => isEditing ? handleSaveProfile() : setIsEditing(true)}
+              style={[styles.settingRow, { backgroundColor: theme.colors.card, shadowColor: theme.colors.shadow }]}
+              onPress={toggleLanguage}
             >
-              <Icon name={isEditing ? 'check-circle' : 'settings'} size={20} color="#FFFFFF" />
-              <Text style={styles.editButtonText}>
-                {isEditing ? t('common.save') : t('common.edit')}
-              </Text>
+              <View style={styles.settingLeft}>
+                <View style={[styles.settingIcon, { backgroundColor: theme.colors.primary + '15' }]}>
+                  <Icon name="globe" size={20} color={theme.colors.primary} />
+                </View>
+                <Text style={[styles.settingLabel, { color: theme.colors.text }]}>
+                  {t('settings.language')}
+                </Text>
+              </View>
+              <View style={styles.settingRight}>
+                <Text style={[styles.settingValue, { color: theme.colors.textSecondary }]}>
+                  {language === 'fr' ? 'Français' : 'English'}
+                </Text>
+                <Icon name="chevron-right" size={20} color={theme.colors.textSecondary} />
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.settingRow, { backgroundColor: theme.colors.card, shadowColor: theme.colors.shadow }]}
+              onPress={cycleTheme}
+            >
+              <View style={styles.settingLeft}>
+                <View style={[styles.settingIcon, { backgroundColor: theme.colors.primary + '15' }]}>
+                  <Icon name="moon" size={20} color={theme.colors.primary} />
+                </View>
+                <Text style={[styles.settingLabel, { color: theme.colors.text }]}>
+                  {t('settings.theme')}
+                </Text>
+              </View>
+              <View style={styles.settingRight}>
+                <Text style={[styles.settingValue, { color: theme.colors.textSecondary }]}>
+                  {getThemeLabel()}
+                </Text>
+                <Icon name="chevron-right" size={20} color={theme.colors.textSecondary} />
+              </View>
             </TouchableOpacity>
           </View>
 
-          <View style={styles.avatarContainer}>
-            <Image
-              source={
-                isEditing && editPhoto
-                  ? { uri: editPhoto }
-                  : getUserAvatar(livreur)
-              }
-              style={styles.avatar}
-            />
+          <TouchableOpacity
+            style={[styles.logoutButton, { backgroundColor: theme.colors.error, shadowColor: theme.colors.error }]}
+            onPress={handleLogout}
+          >
+            <Icon name="logout" size={20} color="#FFFFFF" />
+            <Text style={styles.logoutText}>{t('auth.logout')}</Text>
+          </TouchableOpacity>
 
-            {isEditing && (
-              <>
-                <TouchableOpacity
-                  style={[styles.cancelButton, { backgroundColor: theme.colors.error }]}
-                  onPress={() => {
-                    setIsEditing(false);
-                    setEditName(livreur.username);
-                    setEditEmail(livreur.email);
-                    setEditPhone(livreur.phone);
-                    setEditPhoto(livreur.photo_url);
-                  }}
-                >
-                  <Icon name="x" size={20} color="#FFFFFF" />
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={[styles.editOverlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]}
-                  onPress={handlePickImage}
-                >
-                  <Icon name="camera" size={24} color="#FFFFFF" />
-                </TouchableOpacity>
-              </>
-            )}
-          </View>
-
-          {isEditing ? (
-            <View style={styles.editForm}>
-              <TextInput
-                style={[styles.editInput, { color: theme.colors.text, borderColor: theme.colors.border, backgroundColor: theme.colors.surface }]}
-                value={editName}
-                onChangeText={setEditName}
-                placeholder="Nom d'utilisateur"
-                placeholderTextColor={theme.colors.placeholder}
-              />
-              <TextInput
-                style={[styles.editInput, { color: theme.colors.text, borderColor: theme.colors.border, backgroundColor: theme.colors.surface }]}
-                value={editEmail}
-                onChangeText={setEditEmail}
-                placeholder="Email"
-                keyboardType="email-address"
-                placeholderTextColor={theme.colors.placeholder}
-              />
-              <TextInput
-                style={[styles.editInput, { color: theme.colors.text, borderColor: theme.colors.border, backgroundColor: theme.colors.surface }]}
-                value={editPhone}
-                onChangeText={setEditPhone}
-                placeholder="Téléphone"
-                keyboardType="phone-pad"
-                placeholderTextColor={theme.colors.placeholder}
-              />
-            </View>
-          ) : (
-            <View style={styles.infoContainer}>
-              <Text style={[styles.name, { color: theme.colors.text }]}>{livreur.username}</Text>
-              <Text style={[styles.email, { color: theme.colors.textSecondary }]}>{livreur.email}</Text>
-              <Text style={[styles.phone, { color: theme.colors.textSecondary }]}>{livreur.phone}</Text>
-
-              <View style={[styles.statusBadge, { backgroundColor: livreur.statut === 'en_ligne' ? theme.colors.success + '20' : theme.colors.error + '20' }]}>
-                <View style={[styles.statusDot, { backgroundColor: livreur.statut === 'en_ligne' ? theme.colors.success : theme.colors.error }]} />
-                <Text style={[styles.statusText, { color: livreur.statut === 'en_ligne' ? theme.colors.success : theme.colors.error }]}>
-                  {livreur.statut === 'en_ligne' ? t('profile.online') : t('profile.offline')}
-                </Text>
-              </View>
-            </View>
-          )}
-        </View>
-      </View>
-
-      {/* Statistics Section */}
-      <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
-          {t('profile.statistics')}
-        </Text>
-
-        {loading ? (
-          <ActivityIndicator size="small" color={theme.colors.primary} style={{ marginVertical: 20 }} />
-        ) : stats ? (
-          <View style={styles.statsGrid}>
-            <View style={[styles.statCard, { backgroundColor: theme.colors.card, shadowColor: theme.colors.shadow }]}>
-              <View style={[styles.statIcon, { backgroundColor: theme.colors.primary + '15' }]}>
-                <Icon name="package" size={24} color={theme.colors.primary} />
-              </View>
-              <Text style={[styles.statValue, { color: theme.colors.text }]}>{stats.total_livraisons}</Text>
-              <Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>{t('profile.totalDeliveries')}</Text>
-            </View>
-
-            <View style={[styles.statCard, { backgroundColor: theme.colors.card, shadowColor: theme.colors.shadow }]}>
-              <View style={[styles.statIcon, { backgroundColor: theme.colors.success + '15' }]}>
-                <Icon name="check-circle" size={24} color={theme.colors.success} />
-              </View>
-              <Text style={[styles.statValue, { color: theme.colors.text }]}>{stats.livraisons_reussies}</Text>
-              <Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>{t('profile.successfulDeliveries')}</Text>
-            </View>
-
-            <View style={[styles.statCard, { backgroundColor: theme.colors.card, shadowColor: theme.colors.shadow }]}>
-              <View style={[styles.statIcon, { backgroundColor: theme.colors.info + '15' }]}>
-                <Icon name="trending-up" size={24} color={theme.colors.info} />
-              </View>
-              <Text style={[styles.statValue, { color: theme.colors.text }]}>{stats.taux_reussite.toFixed(0)}%</Text>
-              <Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>{t('profile.successRate')}</Text>
-            </View>
-
-            <View style={[styles.statCard, { backgroundColor: theme.colors.card, shadowColor: theme.colors.shadow }]}>
-              <View style={[styles.statIcon, { backgroundColor: theme.colors.warning + '15' }]}>
-                <Icon name="dollar" size={24} color={theme.colors.warning} />
-              </View>
-              <Text style={[styles.statValue, { color: theme.colors.text }]}>{(stats.montant_total_livre / 1000).toFixed(1)}k</Text>
-              <Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>Gains (FCFA)</Text>
-            </View>
-          </View>
-        ) : null}
-      </View>
-
-      {/* Settings Section */}
-      <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
-          {t('settings.title')}
-        </Text>
-
-        <TouchableOpacity
-          style={[styles.settingRow, { backgroundColor: theme.colors.card, shadowColor: theme.colors.shadow }]}
-          onPress={toggleLanguage}
-        >
-          <View style={styles.settingLeft}>
-            <View style={[styles.settingIcon, { backgroundColor: theme.colors.primary + '15' }]}>
-              <Icon name="globe" size={20} color={theme.colors.primary} />
-            </View>
-            <Text style={[styles.settingLabel, { color: theme.colors.text }]}>
-              {t('settings.language')}
-            </Text>
-          </View>
-          <View style={styles.settingRight}>
-            <Text style={[styles.settingValue, { color: theme.colors.textSecondary }]}>
-              {language === 'fr' ? 'Français' : 'English'}
-            </Text>
-            <Icon name="chevron-right" size={20} color={theme.colors.textSecondary} />
-          </View>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.settingRow, { backgroundColor: theme.colors.card, shadowColor: theme.colors.shadow }]}
-          onPress={cycleTheme}
-        >
-          <View style={styles.settingLeft}>
-            <View style={[styles.settingIcon, { backgroundColor: theme.colors.primary + '15' }]}>
-              <Icon name="moon" size={20} color={theme.colors.primary} />
-            </View>
-            <Text style={[styles.settingLabel, { color: theme.colors.text }]}>
-              {t('settings.theme')}
-            </Text>
-          </View>
-          <View style={styles.settingRight}>
-            <Text style={[styles.settingValue, { color: theme.colors.textSecondary }]}>
-              {getThemeLabel()}
-            </Text>
-            <Icon name="chevron-right" size={20} color={theme.colors.textSecondary} />
-          </View>
-        </TouchableOpacity>
-      </View>
-
-      <TouchableOpacity
-        style={[styles.logoutButton, { backgroundColor: theme.colors.error, shadowColor: theme.colors.error }]}
-        onPress={handleLogout}
-      >
-        <Icon name="logout" size={20} color="#FFFFFF" />
-        <Text style={styles.logoutText}>{t('auth.logout')}</Text>
-      </TouchableOpacity>
-
-      <View style={{ height: 40 }} />
+          <View style={{ height: 40 }} />
         </ScrollView>
       </SwipeableTabWrapper>
     </ScreenContainer>
