@@ -84,6 +84,7 @@ export default function MapScreen() {
 
   const activeDeliveries = assignedDeliveries.filter(
     (c) => (c.statut === 'en_route' || c.statut === 'en_cours') &&
+      c.statut !== 'echec' && // Double check ensuring no failed deliveries appear
       c.latitude != null &&
       c.longitude != null &&
       !isNaN(c.latitude) &&

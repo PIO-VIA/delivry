@@ -16,7 +16,8 @@ export default function DeliveriesScreen() {
   const { isLandscape } = useResponsiveLayout();
 
   const [refreshing, setRefreshing] = useState(false);
-  const [filter, setFilter] = useState<'all' | 'assignee' | 'en_route' | 'en_cours' | 'livre' | 'echec'>('all');
+  // Removed 'echec' from filter options
+  const [filter, setFilter] = useState<'all' | 'assignee' | 'en_route' | 'en_cours' | 'livre'>('all');
 
   const loadDeliveries = async () => {
     await fetchAssignedDeliveries();
@@ -33,10 +34,13 @@ export default function DeliveriesScreen() {
   };
 
   const getFilteredDeliveries = () => {
+    // Always filter out 'echec' from the main list, they belong in history
+    const activeDeliveries = assignedDeliveries.filter(d => d.statut !== 'echec');
+
     if (filter === 'all') {
-      return assignedDeliveries;
+      return activeDeliveries;
     }
-    return assignedDeliveries.filter(d => d.statut === filter);
+    return activeDeliveries.filter(d => d.statut === filter);
   };
 
   const getStatusColor = (status: Commande['statut']) => {
@@ -144,7 +148,7 @@ export default function DeliveriesScreen() {
     <ScreenContainer edges={['bottom']}>
       <SwipeableTabWrapper>
         <View style={[styles.filterContainer, isLandscape && styles.filterContainerLandscape]}>
-          {(['all', 'assignee', 'en_route', 'en_cours', 'livre', 'echec'] as const).map((f) => (
+          {(['all', 'assignee', 'en_route', 'en_cours', 'livre'] as const).map((f) => (
             <TouchableOpacity
               key={f}
               style={[
